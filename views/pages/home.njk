@@ -1,0 +1,20 @@
+{% extends "layouts/base.njk" %}
+
+{% block content %}
+<div class="max-w-lg mx-auto mt-20 text-center">
+  <h1 class="text-4xl font-bold text-stone-100 mb-4">Marches</h1>
+  <p class="text-stone-400 text-lg mb-8">
+    Campaign management for persistent shared worlds.
+  </p>
+  <div class="flex gap-4 justify-center">
+    <a href="/auth/login"
+       class="px-6 py-2.5 bg-stone-100 text-stone-900 rounded font-medium hover:bg-white transition-colors">
+      Sign in
+    </a>
+    <a href="/auth/register"
+       class="px-6 py-2.5 border border-stone-700 text-stone-300 rounded hover:border-stone-500 transition-colors">
+      Create account
+    </a>
+  </div>
+</div>
+{% endblock %}

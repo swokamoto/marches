@@ -1,4 +1,5 @@
 import express from "express";
+import { configureTemplates } from "./templates.js";
 
 const app = express();
 
@@ -11,8 +12,11 @@ app.use(express.json());
 // Serve static files from /public
 app.use(express.static("public"));
 
+// Nunjucks template engine
+configureTemplates(app);
+
 app.get("/", (_req, res) => {
-  res.send("<h1>Marches</h1><p>Campaign management platform.</p>");
+  res.render("pages/home.njk", { title: "Welcome" });
 });
 
 export default app;
