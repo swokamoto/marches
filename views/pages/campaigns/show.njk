@@ -1,0 +1,77 @@
+{% extends "layouts/base.njk" %}
+
+{% block content %}
+
+{# ── Page header ── #}
+<div class="flex items-start justify-between mb-8">
+  <div>
+    <h1 class="text-2xl font-semibold text-stone-100">{{ campaign.name }}</h1>
+    {% if campaign.description %}
+      <p class="text-stone-500 text-sm mt-1 max-w-xl">{{ campaign.description }}</p>
+    {% endif %}
+  </div>
+
+  {% if member.role in ['admin', 'gm'] %}
+    <a
+      href="/campaigns/{{ campaign.slug }}/expeditions/new"
+      class="px-4 py-2 bg-stone-100 text-stone-900 text-sm font-medium rounded hover:bg-white transition-colors shrink-0"
+    >
+      New expedition
+    </a>
+  {% endif %}
+</div>
+
+{# ── Three-column overview ── #}
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+  {# Upcoming expeditions #}
+  <div class="bg-stone-900 border border-stone-800 rounded p-5">
+    <h2 class="text-sm font-medium text-stone-400 uppercase tracking-wide mb-4">
+      Upcoming Expeditions
+    </h2>
+    <div class="text-stone-600 text-sm text-center py-6">
+      No expeditions scheduled.
+    </div>
+  </div>
+
+  {# Recent world events #}
+  <div class="bg-stone-900 border border-stone-800 rounded p-5">
+    <h2 class="text-sm font-medium text-stone-400 uppercase tracking-wide mb-4">
+      World Events
+    </h2>
+    <div class="text-stone-600 text-sm text-center py-6">
+      No events recorded yet.
+    </div>
+  </div>
+
+  {# Conflict warnings (GM/admin only) #}
+  {% if member.role in ['admin', 'gm'] %}
+    <div class="bg-stone-900 border border-stone-800 rounded p-5">
+      <h2 class="text-sm font-medium text-stone-400 uppercase tracking-wide mb-4">
+        Scheduling Conflicts
+      </h2>
+      <div class="text-stone-600 text-sm text-center py-6">
+        No conflicts detected.
+      </div>
+    </div>
+  {% endif %}
+
+</div>
+
+{# ── Activity feed ── #}
+<div class="mt-8">
+  <h2 class="text-sm font-medium text-stone-400 uppercase tracking-wide mb-4">
+    Recent Activity
+  </h2>
+  <div
+    id="activity-feed"
+    hx-get="/campaigns/{{ campaign.slug }}/activity"
+    hx-trigger="load, every 30s"
+    hx-swap="innerHTML"
+    class="space-y-2"
+  >
+    <p class="text-stone-600 text-sm">Loading activity...</p>
+  </div>
+</div>
+
+{% endblock %}

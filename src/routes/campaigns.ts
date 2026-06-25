@@ -1,6 +1,10 @@
 import { Router } from "express";
 import { requireAuth } from "../middleware/auth.js";
 import {
+  loadCampaign,
+  requireCampaignMember,
+} from "../middleware/campaign.js";
+import {
   createCampaign,
   getUserCampaigns,
 } from "../services/campaigns.js";
@@ -42,5 +46,32 @@ router.post("/new", async (req, res) => {
   req.session.flash = { success: `Campaign "${campaign.name}" created.` };
   res.redirect(`/campaigns/${campaign.slug}`);
 });
+
+// ─── Campaign dashboard ───────────────────────────────────────────────────────
+// loadCampaign reads :slug, requireCampaignMember verifies membership.
+// Both attach to res.locals so the base layout nav renders correctly.
+
+router.get(
+  "/:slug",
+  loadCampaign,
+  requireCampaignMember,
+  (_req, res) => {
+    res.render("pages/campaigns/show.njk", {
+      title: res.locals.campaign.name,
+    });
+  }
+);
+
+// ─── Activity feed partial (HTMX) ─────────────────────────────────────────────
+
+router.get(
+  "/:slug/activity",
+  loadCampaign,
+  requireCampaignMember,
+  (_req, res) => {
+    // Stub — real activity log query added in Phase 8
+    res.render("partials/activity-feed.njk", { activities: [] });
+  }
+);
 
 export default router;

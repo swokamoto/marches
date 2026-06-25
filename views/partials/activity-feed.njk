@@ -1,0 +1,10 @@
+{% if activities.length === 0 %}
+  <p class="text-stone-600 text-sm">No activity yet.</p>
+{% else %}
+  {% for item in activities %}
+    <div class="flex items-start gap-3 text-sm">
+      <span class="text-stone-600 shrink-0 w-24">{{ item.occurredAt | timeago }}</span>
+      <span class="text-stone-400">{{ item.description }}</span>
+    </div>
+  {% endfor %}
+{% endif %}
