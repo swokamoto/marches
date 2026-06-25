@@ -1,0 +1,36 @@
+{% extends "layouts/base.njk" %}
+{% block content %}
+
+<div class="flex items-center justify-between mb-6">
+  <h1 class="text-2xl font-semibold text-stone-100">Expeditions</h1>
+  {% if member.role in ['gm', 'admin'] %}
+    <a href="/campaigns/{{ campaign.slug }}/expeditions/new"
+       class="px-4 py-2 bg-stone-100 text-stone-900 text-sm font-medium rounded hover:bg-white transition-colors">
+      New expedition
+    </a>
+  {% endif %}
+</div>
+
+{% if expeditionList.length === 0 %}
+  <div class="border border-dashed border-stone-800 rounded p-12 text-center">
+    <p class="text-stone-500">No expeditions yet.</p>
+  </div>
+{% else %}
+  <div class="space-y-3">
+    {% for exp in expeditionList %}
+      <a href="/campaigns/{{ campaign.slug }}/expeditions/{{ exp.id }}"
+         class="flex items-center justify-between bg-stone-900 border border-stone-800 rounded p-4 hover:border-stone-700 transition-colors">
+        <div>
+          <span class="font-medium text-stone-100">{{ exp.title }}</span>
+          <span class="text-stone-500 text-sm ml-3">GM: {{ exp.gm.displayName }}</span>
+          {% if exp.scheduledDate %}
+            <span class="text-stone-600 text-sm ml-3">{{ exp.scheduledDate | dateformat }}</span>
+          {% endif %}
+        </div>
+        {% include "partials/expedition-status-badge.njk" %}
+      </a>
+    {% endfor %}
+  </div>
+{% endif %}
+
+{% endblock %}

@@ -1,0 +1,49 @@
+{% extends "layouts/base.njk" %}
+{% block content %}
+<div class="max-w-lg">
+  <h1 class="text-2xl font-semibold text-stone-100 mb-1">New Expedition</h1>
+  <p class="text-stone-500 text-sm mb-8">
+    Create the expedition stub. Add locations, NPCs, and players on the detail page.
+  </p>
+
+  <form method="POST" action="/campaigns/{{ campaign.slug }}/expeditions/new" class="space-y-5">
+
+    <div>
+      <label for="title" class="block text-sm text-stone-400 mb-1">Title</label>
+      <input type="text" id="title" name="title" required placeholder="Cave Run"
+             class="w-full bg-stone-900 border border-stone-700 rounded px-3 py-2 text-stone-100 focus:outline-none focus:border-stone-500 transition-colors"/>
+    </div>
+
+    <div>
+      <label for="premise" class="block text-sm text-stone-400 mb-1">
+        Premise
+        <span class="text-stone-600 ml-1">optional — your stated intent, visible to other GMs</span>
+      </label>
+      <textarea id="premise" name="premise" rows="3"
+                placeholder="Track down the Goblin Chief and end the raids on the trade route."
+                class="w-full bg-stone-900 border border-stone-700 rounded px-3 py-2 text-stone-100 focus:outline-none focus:border-stone-500 transition-colors resize-none"></textarea>
+    </div>
+
+    <div>
+      <label for="scheduled_date" class="block text-sm text-stone-400 mb-1">
+        Scheduled date
+        <span class="text-stone-600 ml-1">optional</span>
+      </label>
+      <input type="datetime-local" id="scheduled_date" name="scheduled_date"
+             class="w-full bg-stone-900 border border-stone-700 rounded px-3 py-2 text-stone-300 focus:outline-none focus:border-stone-500 transition-colors"/>
+    </div>
+
+    <div class="flex gap-3 pt-2">
+      <button type="submit"
+              class="px-5 py-2 bg-stone-100 text-stone-900 font-medium rounded hover:bg-white transition-colors">
+        Create expedition
+      </button>
+      <a href="/campaigns/{{ campaign.slug }}/expeditions"
+         class="px-5 py-2 border border-stone-700 text-stone-400 rounded hover:border-stone-500 transition-colors">
+        Cancel
+      </a>
+    </div>
+
+  </form>
+</div>
+{% endblock %}

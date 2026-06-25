@@ -1,0 +1,24 @@
+{# Expects: expedition, nextStatus #}
+<div class="flex items-center gap-4">
+  {% include "partials/expedition-status-badge.njk" %}
+
+  {% if member.role in ['gm', 'admin'] and expedition.status !== 'completed' and expedition.status !== 'cancelled' %}
+    {% if nextStatus %}
+      <form hx-post="/campaigns/{{ campaign.slug }}/expeditions/{{ expedition.id }}/advance"
+            hx-target="#expedition-status-zone"
+            hx-swap="outerHTML">
+        <button type="submit"
+                class="px-4 py-1.5 text-sm border border-stone-700 text-stone-400 rounded hover:border-stone-500 transition-colors">
+          Advance to {{ nextStatus }} →
+        </button>
+      </form>
+    {% endif %}
+    <form method="POST" action="/campaigns/{{ campaign.slug }}/expeditions/{{ expedition.id }}/cancel">
+      <button type="submit"
+              onclick="return confirm('Cancel this expedition?')"
+              class="px-3 py-1.5 text-sm text-red-700 hover:text-red-500 transition-colors">
+        Cancel
+      </button>
+    </form>
+  {% endif %}
+</div>

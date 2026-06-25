@@ -584,3 +584,67 @@ export const journalEntriesRelations = relations(journalEntries, ({ one }) => ({
     references: [campaigns.id],
   }),
 }));
+
+export const charactersRelations = relations(characters, ({ one }) => ({
+  player: one(users, {
+    fields: [characters.playerId],
+    references: [users.id],
+  }),
+  campaign: one(campaigns, {
+    fields: [characters.campaignId],
+    references: [campaigns.id],
+  }),
+}));
+
+export const expeditionLocationsRelations = relations(
+  expeditionLocations,
+  ({ one }) => ({
+    expedition: one(expeditions, {
+      fields: [expeditionLocations.expeditionId],
+      references: [expeditions.id],
+    }),
+    location: one(locations, {
+      fields: [expeditionLocations.locationId],
+      references: [locations.id],
+    }),
+  })
+);
+
+export const expeditionNpcsRelations = relations(expeditionNpcs, ({ one }) => ({
+  expedition: one(expeditions, {
+    fields: [expeditionNpcs.expeditionId],
+    references: [expeditions.id],
+  }),
+  npc: one(npcs, {
+    fields: [expeditionNpcs.npcId],
+    references: [npcs.id],
+  }),
+}));
+
+export const expeditionArtifactsRelations = relations(
+  expeditionArtifacts,
+  ({ one }) => ({
+    expedition: one(expeditions, {
+      fields: [expeditionArtifacts.expeditionId],
+      references: [expeditions.id],
+    }),
+    artifact: one(artifacts, {
+      fields: [expeditionArtifacts.artifactId],
+      references: [artifacts.id],
+    }),
+  })
+);
+
+export const expeditionParticipantsRelations = relations(
+  expeditionParticipants,
+  ({ one }) => ({
+    expedition: one(expeditions, {
+      fields: [expeditionParticipants.expeditionId],
+      references: [expeditions.id],
+    }),
+    character: one(characters, {
+      fields: [expeditionParticipants.characterId],
+      references: [characters.id],
+    }),
+  })
+);

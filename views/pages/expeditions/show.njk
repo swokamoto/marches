@@ -1,0 +1,56 @@
+{% extends "layouts/base.njk" %}
+{% block content %}
+
+{# ── Header + status pipeline ── #}
+<div class="mb-8">
+  <div class="flex items-start justify-between">
+    <div>
+      <h1 class="text-2xl font-semibold text-stone-100 mb-1">{{ expedition.title }}</h1>
+      <p class="text-stone-500 text-sm">
+        GM: {{ expedition.gm.displayName }}
+        {% if expedition.scheduledDate %}
+          · {{ expedition.scheduledDate | dateformat }}
+        {% endif %}
+      </p>
+    </div>
+    <a href="/campaigns/{{ campaign.slug }}/expeditions"
+       class="text-xs text-stone-600 hover:text-stone-400 mt-1">← Expeditions</a>
+  </div>
+
+  {% if expedition.premise %}
+    <p class="mt-4 text-stone-400 text-sm border-l-2 border-stone-700 pl-4 italic">
+      {{ expedition.premise }}
+    </p>
+  {% endif %}
+</div>
+
+{# ── Status zone (swapped by HTMX on advance) ── #}
+<div id="expedition-status-zone">
+  {% include "partials/expedition-status-zone.njk" %}
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-8">
+
+  {# ── Locations ── #}
+  <div id="expedition-locations">
+    {% include "partials/expedition-locations.njk" %}
+  </div>
+
+  {# ── NPCs ── #}
+  <div id="expedition-npcs">
+    {% include "partials/expedition-npcs.njk" %}
+  </div>
+
+  {# ── Artifacts ── #}
+  <div id="expedition-artifacts">
+    {% include "partials/expedition-artifacts.njk" %}
+  </div>
+
+  {# ── Participants ── #}
+  <div id="expedition-participants">
+    {% include "partials/expedition-participants.njk" %}
+  </div>
+
+</div>
+
+{% endblock %}
