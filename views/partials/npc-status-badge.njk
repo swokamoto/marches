@@ -1,0 +1,12 @@
+{% set entity = npc %}
+{% if entity %}
+  {% if entity.status === 'alive' %}
+    <span class="text-xs px-2 py-0.5 rounded border border-green-800 text-green-400 bg-green-950/40">alive</span>
+  {% elif entity.status === 'dead' %}
+    <span class="text-xs px-2 py-0.5 rounded border border-red-900 text-red-500 bg-red-950/40">dead</span>
+  {% elif entity.status === 'missing' %}
+    <span class="text-xs px-2 py-0.5 rounded border border-amber-800 text-amber-400 bg-amber-950/40">missing</span>
+  {% else %}
+    <span class="text-xs px-2 py-0.5 rounded border border-stone-700 text-stone-500">unknown</span>
+  {% endif %}
+{% endif %}

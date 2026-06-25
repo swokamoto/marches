@@ -1,0 +1,30 @@
+{% extends "layouts/base.njk" %}
+{% block content %}
+<div class="flex items-center justify-between mb-6">
+  <h1 class="text-2xl font-semibold text-stone-100">Artifacts</h1>
+  {% if member.role in ['gm', 'admin'] %}
+    <a href="/campaigns/{{ campaign.slug }}/artifacts/new"
+       class="px-4 py-2 bg-stone-100 text-stone-900 text-sm font-medium rounded hover:bg-white transition-colors">
+      New artifact
+    </a>
+  {% endif %}
+</div>
+
+{% if artifactList.length === 0 %}
+  <div class="border border-dashed border-stone-800 rounded p-12 text-center">
+    <p class="text-stone-500">No artifacts recorded yet.</p>
+  </div>
+{% else %}
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+    {% for artifact in artifactList %}
+      <a href="/campaigns/{{ campaign.slug }}/artifacts/{{ artifact.id }}"
+         class="block bg-stone-900 border border-stone-800 rounded p-5 hover:border-stone-700 transition-colors">
+        <div class="flex items-start justify-between gap-3">
+          <span class="font-medium text-stone-100">{{ artifact.name }}</span>
+          {% include "partials/artifact-status-badge.njk" %}
+        </div>
+      </a>
+    {% endfor %}
+  </div>
+{% endif %}
+{% endblock %}

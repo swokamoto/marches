@@ -1,0 +1,33 @@
+{% extends "layouts/base.njk" %}
+{% block content %}
+<div class="flex items-start justify-between mb-8">
+  <div>
+    <div class="flex items-center gap-3 mb-1">
+      <h1 class="text-2xl font-semibold text-stone-100">{{ npc.name }}</h1>
+      <div id="npc-status-badge">{% include "partials/npc-status-badge.njk" %}</div>
+    </div>
+    <a href="/campaigns/{{ campaign.slug }}/npcs" class="text-xs text-stone-600 hover:text-stone-400">← All NPCs</a>
+  </div>
+</div>
+
+{% if member.role in ['gm', 'admin'] %}
+  <div class="mb-8 flex items-center gap-3">
+    <span class="text-sm text-stone-500">Update status:</span>
+    <form hx-post="/campaigns/{{ campaign.slug }}/npcs/{{ npc.id }}/status"
+          hx-target="#npc-status-badge" hx-swap="innerHTML" class="flex items-center gap-2">
+      <select name="status" class="bg-stone-900 border border-stone-700 rounded px-3 py-1.5 text-sm text-stone-300 focus:outline-none focus:border-stone-500">
+        {% for s in ['alive', 'dead', 'missing', 'unknown'] %}
+          <option value="{{ s }}" {% if npc.status === s %}selected{% endif %}>{{ s }}</option>
+        {% endfor %}
+      </select>
+      <button type="submit" class="px-3 py-1.5 text-sm border border-stone-700 text-stone-400 rounded hover:border-stone-500 transition-colors">Save</button>
+    </form>
+  </div>
+{% endif %}
+
+<div id="journal-section"
+     hx-get="/campaigns/{{ campaign.slug }}/journal/npc/{{ npc.id }}"
+     hx-trigger="load" hx-swap="outerHTML">
+  <p class="text-stone-600 text-sm">Loading records...</p>
+</div>
+{% endblock %}

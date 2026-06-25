@@ -1,0 +1,74 @@
+import { Router } from "express";
+import { requireCampaignRole } from "../middleware/campaign.js";
+import { getArtifacts, getArtifactById, createArtifact, updateArtifactStatus, searchArtifacts } from "../services/artifacts.js";
+
+const router = Router({ mergeParams: true });
+
+router.get("/", async (_req, res) => {
+  const artifactList = await getArtifacts(res.locals.campaign.id);
+  res.render("pages/artifacts/index.njk", {
+    title: `Artifacts — ${res.locals.campaign.name}`,
+    artifactList,
+  });
+});
+
+router.get("/new", requireCampaignRole("gm", "admin"), (_req, res) => {
+  res.render("pages/artifacts/new.njk", { title: "New Artifact" });
+});
+
+router.post("/new", requireCampaignRole("gm", "admin"), async (req, res) => {
+  const { name } = req.body as { name: string };
+  if (!name?.trim()) {
+    req.session.flash = { error: "Artifact name is required." };
+    return res.redirect(`/campaigns/${res.locals.campaign.slug}/artifacts/new`);
+  }
+  const artifact = await createArtifact(res.locals.campaign.id, name, req.session.userId!);
+  req.session.flash = { success: `Artifact "${artifact.name}" created.` };
+  res.redirect(`/campaigns/${res.locals.campaign.slug}/artifacts/${artifact.id}`);
+});
+
+router.get("/search", async (req, res) => {
+  const q = String(req.query.q ?? "").trim();
+  if (!q) return res.json([]);
+  const results = await searchArtifacts(res.locals.campaign.id, q);
+  res.json(results);
+});
+
+router.get("/:artifactId", async (req, res) => {
+  const artifact = await getArtifactById(req.params.artifactId);
+  if (!artifact || artifact.campaignId !== res.locals.campaign.id) {
+    return res.status(404).render("pages/error.njk", { message: "Artifact not found." });
+  }
+  res.render("pages/artifacts/show.njk", {
+    title: `${artifact.name} — ${res.locals.campaign.name}`,
+    artifact,
+  });
+});
+
+router.post(
+  "/:artifactId/status",
+  requireCampaignRole("gm", "admin"),
+  async (req, res) => {
+    const artifactId = Array.isArray(req.params.artifactId) ? req.params.artifactId[0] : req.params.artifactId;
+    const artifact = await getArtifactById(artifactId);
+    if (!artifact || artifact.campaignId !== res.locals.campaign.id) {
+      return res.status(404).render("pages/error.njk", { message: "Artifact not found." });
+    }
+
+    const { status } = req.body as { status: string };
+    const validStatuses = ["extant", "lost", "destroyed", "unknown"];
+    if (!validStatuses.includes(status)) {
+      req.session.flash = { error: "Invalid status." };
+      return res.redirect(`/campaigns/${res.locals.campaign.slug}/artifacts/${artifact.id}`);
+    }
+
+    const updated = await updateArtifactStatus(artifact.id, status as Parameters<typeof updateArtifactStatus>[1]);
+
+    if (req.headers["hx-request"]) {
+      return res.render("partials/artifact-status-badge.njk", { artifact: updated });
+    }
+    res.redirect(`/campaigns/${res.locals.campaign.slug}/artifacts/${artifact.id}`);
+  }
+);
+
+export default router;

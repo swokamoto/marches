@@ -9,6 +9,8 @@ import {
   getUserCampaigns,
 } from "../services/campaigns.js";
 import locationsRouter from "./locations.js";
+import npcsRouter from "./npcs.js";
+import artifactsRouter from "./artifacts.js";
 import journalRouter from "./journal.js";
 
 const router = Router();
@@ -53,19 +55,10 @@ router.post("/new", async (req, res) => {
 // loadCampaign + requireCampaignMember run here so sub-routers
 // always have res.locals.campaign and res.locals.member available.
 
-router.use(
-  "/:slug/locations",
-  loadCampaign,
-  requireCampaignMember,
-  locationsRouter
-);
-
-router.use(
-  "/:slug/journal",
-  loadCampaign,
-  requireCampaignMember,
-  journalRouter
-);
+router.use("/:slug/locations", loadCampaign, requireCampaignMember, locationsRouter);
+router.use("/:slug/npcs", loadCampaign, requireCampaignMember, npcsRouter);
+router.use("/:slug/artifacts", loadCampaign, requireCampaignMember, artifactsRouter);
+router.use("/:slug/journal", loadCampaign, requireCampaignMember, journalRouter);
 
 // ─── Campaign dashboard ───────────────────────────────────────────────────────
 // loadCampaign reads :slug, requireCampaignMember verifies membership.

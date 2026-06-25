@@ -1,0 +1,18 @@
+{% extends "layouts/base.njk" %}
+{% block content %}
+<div class="max-w-lg">
+  <h1 class="text-2xl font-semibold text-stone-100 mb-1">New NPC</h1>
+  <p class="text-stone-500 text-sm mb-8">Add a character to the world. Full details can be added via journal entries.</p>
+  <form method="POST" action="/campaigns/{{ campaign.slug }}/npcs/new" class="space-y-5">
+    <div>
+      <label for="name" class="block text-sm text-stone-400 mb-1">Name</label>
+      <input type="text" id="name" name="name" required placeholder="Goblin Chief"
+             class="w-full bg-stone-900 border border-stone-700 rounded px-3 py-2 text-stone-100 focus:outline-none focus:border-stone-500 transition-colors"/>
+    </div>
+    <div class="flex gap-3 pt-2">
+      <button type="submit" class="px-5 py-2 bg-stone-100 text-stone-900 font-medium rounded hover:bg-white transition-colors">Create NPC</button>
+      <a href="/campaigns/{{ campaign.slug }}/npcs" class="px-5 py-2 border border-stone-700 text-stone-400 rounded hover:border-stone-500 transition-colors">Cancel</a>
+    </div>
+  </form>
+</div>
+{% endblock %}
