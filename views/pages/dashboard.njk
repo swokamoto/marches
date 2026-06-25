@@ -1,12 +1,26 @@
 {% extends "layouts/base.njk" %}
 
 {% block content %}
-<div>
-  <h1 class="text-2xl font-semibold text-stone-100 mb-2">Dashboard</h1>
-  <p class="text-stone-500 text-sm">Welcome back, {{ user.displayName }}.</p>
-
-  <div class="mt-10 border border-dashed border-stone-800 rounded p-8 text-center text-stone-600 text-sm">
-    Campaign overview coming in Phase 4.
+<div class="flex items-center justify-between mb-8">
+  <div>
+    <h1 class="text-2xl font-semibold text-stone-100">Dashboard</h1>
+    <p class="text-stone-500 text-sm mt-1">Welcome back, {{ user.displayName }}.</p>
   </div>
+  <a
+    href="/campaigns/new"
+    class="px-4 py-2 bg-stone-100 text-stone-900 text-sm font-medium rounded hover:bg-white transition-colors"
+  >
+    New campaign
+  </a>
+</div>
+
+<div class="mt-4">
+  <a href="/campaigns" class="text-stone-400 hover:text-stone-100 text-sm">
+    View my campaigns →
+  </a>
+</div>
+
+<div class="mt-10 border border-dashed border-stone-800 rounded p-8 text-center text-stone-600 text-sm">
+  Full dashboard with expedition overview and activity feed coming in Phase 8.
 </div>
 {% endblock %}

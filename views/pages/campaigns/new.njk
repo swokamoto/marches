@@ -1,0 +1,55 @@
+{% extends "layouts/base.njk" %}
+
+{% block content %}
+<div class="max-w-lg">
+  <h1 class="text-2xl font-semibold text-stone-100 mb-1">New Campaign</h1>
+  <p class="text-stone-500 text-sm mb-8">You will be the administrator of this campaign.</p>
+
+  <form method="POST" action="/campaigns/new" class="space-y-5">
+
+    <div>
+      <label for="name" class="block text-sm text-stone-400 mb-1">Campaign name</label>
+      <input
+        type="text"
+        id="name"
+        name="name"
+        required
+        placeholder="The Reaches of Valdrek"
+        class="w-full bg-stone-900 border border-stone-700 rounded px-3 py-2 text-stone-100
+               focus:outline-none focus:border-stone-500 transition-colors"
+      />
+    </div>
+
+    <div>
+      <label for="description" class="block text-sm text-stone-400 mb-1">
+        Description
+        <span class="text-stone-600 ml-1">optional</span>
+      </label>
+      <textarea
+        id="description"
+        name="description"
+        rows="4"
+        placeholder="A brief description of the campaign world..."
+        class="w-full bg-stone-900 border border-stone-700 rounded px-3 py-2 text-stone-100
+               focus:outline-none focus:border-stone-500 transition-colors resize-none"
+      ></textarea>
+    </div>
+
+    <div class="flex gap-3 pt-2">
+      <button
+        type="submit"
+        class="px-5 py-2 bg-stone-100 text-stone-900 font-medium rounded hover:bg-white transition-colors"
+      >
+        Create campaign
+      </button>
+      <a
+        href="/dashboard"
+        class="px-5 py-2 border border-stone-700 text-stone-400 rounded hover:border-stone-500 transition-colors"
+      >
+        Cancel
+      </a>
+    </div>
+
+  </form>
+</div>
+{% endblock %}

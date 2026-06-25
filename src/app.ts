@@ -5,6 +5,7 @@ import { sessionMiddleware } from "./middleware/session.js";
 import { flashMiddleware, loadUser } from "./middleware/locals.js";
 import { requireAuth } from "./middleware/auth.js";
 import authRouter from "./routes/auth.js";
+import campaignsRouter from "./routes/campaigns.js";
 
 const app = express();
 
@@ -30,6 +31,7 @@ configureTemplates(app);
 // ─── Routes ───────────────────────────────────────────────────────────────────
 
 app.use("/auth", authRouter);
+app.use("/campaigns", campaignsRouter);
 
 // Authenticated users go to dashboard; guests see the landing page
 app.get("/", (req, res) => {

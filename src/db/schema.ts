@@ -500,6 +500,17 @@ export const usersRelations = relations(users, ({ many }) => ({
   expeditions: many(expeditions),
 }));
 
+export const campaignMembersRelations = relations(campaignMembers, ({ one }) => ({
+  campaign: one(campaigns, {
+    fields: [campaignMembers.campaignId],
+    references: [campaigns.id],
+  }),
+  user: one(users, {
+    fields: [campaignMembers.userId],
+    references: [users.id],
+  }),
+}));
+
 export const campaignsRelations = relations(campaigns, ({ one, many }) => ({
   createdBy: one(users, {
     fields: [campaigns.createdBy],
