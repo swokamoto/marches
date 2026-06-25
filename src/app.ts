@@ -3,6 +3,7 @@ import express from "express";
 import { configureTemplates } from "./templates.js";
 import { sessionMiddleware } from "./middleware/session.js";
 import { flashMiddleware, loadUser } from "./middleware/locals.js";
+import authRouter from "./routes/auth.js";
 
 const app = express();
 
@@ -24,6 +25,10 @@ app.use(loadUser);
 
 // Nunjucks template engine
 configureTemplates(app);
+
+// ─── Routes ───────────────────────────────────────────────────────────────────
+
+app.use("/auth", authRouter);
 
 app.get("/", (_req, res) => {
   res.render("pages/home.njk", { title: "Welcome" });
