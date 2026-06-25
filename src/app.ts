@@ -3,6 +3,7 @@ import express from "express";
 import { configureTemplates } from "./templates.js";
 import { sessionMiddleware } from "./middleware/session.js";
 import { flashMiddleware, loadUser } from "./middleware/locals.js";
+import { requireAuth } from "./middleware/auth.js";
 import authRouter from "./routes/auth.js";
 
 const app = express();
@@ -30,8 +31,15 @@ configureTemplates(app);
 
 app.use("/auth", authRouter);
 
-app.get("/", (_req, res) => {
+// Authenticated users go to dashboard; guests see the landing page
+app.get("/", (req, res) => {
+  if (req.session.userId) return res.redirect("/dashboard");
   res.render("pages/home.njk", { title: "Welcome" });
+});
+
+// Dashboard — protected, stub until Phase 4
+app.get("/dashboard", requireAuth, (req, res) => {
+  res.render("pages/dashboard.njk", { title: "Dashboard" });
 });
 
 export default app;

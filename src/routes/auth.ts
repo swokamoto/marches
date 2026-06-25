@@ -1,16 +1,16 @@
 import { Router } from "express";
 import { registerUser, loginUser } from "../services/auth.js";
+import { requireGuest } from "../middleware/auth.js";
 
 const router = Router();
 
 // ─── Register ─────────────────────────────────────────────────────────────────
 
-router.get("/register", (req, res) => {
-  if (req.session.userId) return res.redirect("/");
+router.get("/register", requireGuest, (req, res) => {
   res.render("pages/auth/register.njk", { title: "Create account" });
 });
 
-router.post("/register", async (req, res) => {
+router.post("/register", requireGuest, async (req, res) => {
   const { email, displayName, password, confirmPassword } = req.body as {
     email: string;
     displayName: string;
@@ -47,12 +47,11 @@ router.post("/register", async (req, res) => {
 
 // ─── Login ────────────────────────────────────────────────────────────────────
 
-router.get("/login", (req, res) => {
-  if (req.session.userId) return res.redirect("/");
+router.get("/login", requireGuest, (req, res) => {
   res.render("pages/auth/login.njk", { title: "Sign in" });
 });
 
-router.post("/login", async (req, res) => {
+router.post("/login", requireGuest, async (req, res) => {
   const { email, password } = req.body as { email: string; password: string };
 
   if (!email || !password) {
