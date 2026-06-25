@@ -498,6 +498,7 @@ export const usersRelations = relations(users, ({ many }) => ({
   campaignMembers: many(campaignMembers),
   characters: many(characters),
   expeditions: many(expeditions),
+  journalEntries: many(journalEntries),
 }));
 
 export const campaignMembersRelations = relations(campaignMembers, ({ one }) => ({
@@ -572,3 +573,14 @@ export const sessionReportsRelations = relations(
     worldChanges: many(worldChanges),
   })
 );
+
+export const journalEntriesRelations = relations(journalEntries, ({ one }) => ({
+  author: one(users, {
+    fields: [journalEntries.authorId],
+    references: [users.id],
+  }),
+  campaign: one(campaigns, {
+    fields: [journalEntries.campaignId],
+    references: [campaigns.id],
+  }),
+}));

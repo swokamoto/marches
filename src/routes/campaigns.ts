@@ -9,6 +9,7 @@ import {
   getUserCampaigns,
 } from "../services/campaigns.js";
 import locationsRouter from "./locations.js";
+import journalRouter from "./journal.js";
 
 const router = Router();
 
@@ -57,6 +58,13 @@ router.use(
   loadCampaign,
   requireCampaignMember,
   locationsRouter
+);
+
+router.use(
+  "/:slug/journal",
+  loadCampaign,
+  requireCampaignMember,
+  journalRouter
 );
 
 // ─── Campaign dashboard ───────────────────────────────────────────────────────
