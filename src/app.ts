@@ -1,5 +1,8 @@
+import "dotenv/config";
 import express from "express";
 import { configureTemplates } from "./templates.js";
+import { sessionMiddleware } from "./middleware/session.js";
+import { flashMiddleware, loadUser } from "./middleware/locals.js";
 
 const app = express();
 
@@ -11,6 +14,13 @@ app.use(express.json());
 
 // Serve static files from /public
 app.use(express.static("public"));
+
+// Session — must come before flash and loadUser
+app.use(sessionMiddleware);
+
+// Flash messages + authenticated user on every request
+app.use(flashMiddleware);
+app.use(loadUser);
 
 // Nunjucks template engine
 configureTemplates(app);
