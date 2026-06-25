@@ -26,6 +26,7 @@
     "@types/node": "^26.0.1",
     "@types/nunjucks": "^3.2.6",
     "@types/pg": "^8.20.0",
+    "chokidar": "^3.6.0",
     "concurrently": "^10.0.3",
     "drizzle-kit": "^0.31.10",
     "tailwindcss": "^4.3.1",
