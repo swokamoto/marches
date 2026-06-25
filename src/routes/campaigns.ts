@@ -8,6 +8,7 @@ import {
   createCampaign,
   getUserCampaigns,
 } from "../services/campaigns.js";
+import locationsRouter from "./locations.js";
 
 const router = Router();
 
@@ -46,6 +47,17 @@ router.post("/new", async (req, res) => {
   req.session.flash = { success: `Campaign "${campaign.name}" created.` };
   res.redirect(`/campaigns/${campaign.slug}`);
 });
+
+// ─── Sub-routers (campaign-scoped) ────────────────────────────────────────────
+// loadCampaign + requireCampaignMember run here so sub-routers
+// always have res.locals.campaign and res.locals.member available.
+
+router.use(
+  "/:slug/locations",
+  loadCampaign,
+  requireCampaignMember,
+  locationsRouter
+);
 
 // ─── Campaign dashboard ───────────────────────────────────────────────────────
 // loadCampaign reads :slug, requireCampaignMember verifies membership.

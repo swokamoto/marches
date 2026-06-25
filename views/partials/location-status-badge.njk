@@ -1,0 +1,15 @@
+{# Status badge — expects `loc` or `location` in context #}
+{% set entity = location if location else loc %}
+{% if entity %}
+  {% if entity.status === 'open' %}
+    <span class="text-xs px-2 py-0.5 rounded border border-green-800 text-green-400 bg-green-950/40">open</span>
+  {% elif entity.status === 'active' %}
+    <span class="text-xs px-2 py-0.5 rounded border border-amber-800 text-amber-400 bg-amber-950/40">active</span>
+  {% elif entity.status === 'ruined' %}
+    <span class="text-xs px-2 py-0.5 rounded border border-stone-700 text-stone-400">ruined</span>
+  {% elif entity.status === 'destroyed' %}
+    <span class="text-xs px-2 py-0.5 rounded border border-red-900 text-red-500 bg-red-950/40">destroyed</span>
+  {% else %}
+    <span class="text-xs px-2 py-0.5 rounded border border-stone-700 text-stone-500">unknown</span>
+  {% endif %}
+{% endif %}
