@@ -39,6 +39,11 @@
         <button type="submit" class="px-3 py-1.5 text-sm border border-stone-700 text-stone-400 rounded hover:border-stone-500 transition-colors">Save</button>
       </form>
     </div>
+
+    <form method="POST" action="/campaigns/{{ campaign.slug }}/artifacts/{{ artifact.id }}/archive"
+          onsubmit="return confirm('Archive {{ artifact.name }}? It will be hidden from all lists.')">
+      <button type="submit" class="px-3 py-1.5 text-sm border border-stone-800 text-stone-600 rounded hover:border-red-800 hover:text-red-500 transition-colors">Archive</button>
+    </form>
   </div>
 {% elif artifact.locationId %}
   <div class="mb-6">

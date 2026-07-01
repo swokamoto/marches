@@ -5,6 +5,7 @@ import {
   getLocationBySlug,
   createLocation,
   updateLocationStatus,
+  archiveLocation,
   searchLocations,
 } from "../services/locations.js";
 
@@ -117,6 +118,22 @@ router.post(
     res.redirect(
       `/campaigns/${res.locals.campaign.slug}/locations/${location.slug}`
     );
+  }
+);
+
+// ─── Archive (GM/admin only) ──────────────────────────────────────────────────
+router.post(
+  "/:locationSlug/archive",
+  requireCampaignRole("gm", "admin"),
+  async (req, res) => {
+    const slug = Array.isArray(req.params.locationSlug)
+      ? req.params.locationSlug[0]
+      : req.params.locationSlug;
+    const location = await getLocationBySlug(res.locals.campaign.id, slug);
+    if (!location) return res.status(404).render("pages/error.njk", { message: "Location not found." });
+    await archiveLocation(location.id);
+    req.session.flash = { success: `"${location.name}" has been archived.` };
+    res.redirect(`/campaigns/${res.locals.campaign.slug}/locations`);
   }
 );
 

@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { requireCampaignRole } from "../middleware/campaign.js";
-import { getNpcs, getNpcById, createNpc, updateNpcStatus, searchNpcs, updateNpcLocation, getNpcsWithLocation } from "../services/npcs.js";
+import { getNpcs, getNpcById, createNpc, updateNpcStatus, searchNpcs, updateNpcLocation, getNpcsWithLocation, archiveNpc } from "../services/npcs.js";
 import { getLocations } from "../services/locations.js";
 
 const router = Router({ mergeParams: true });
@@ -89,6 +89,21 @@ router.post(
     await updateNpcLocation(npc.id, location_id || null);
     req.session.flash = { success: "Location updated." };
     res.redirect(`/campaigns/${res.locals.campaign.slug}/npcs/${npc.id}`);
+  }
+);
+
+router.post(
+  "/:npcId/archive",
+  requireCampaignRole("gm", "admin"),
+  async (req, res) => {
+    const npcId = Array.isArray(req.params.npcId) ? req.params.npcId[0] : req.params.npcId;
+    const npc = await getNpcById(npcId);
+    if (!npc || npc.campaignId !== res.locals.campaign.id) {
+      return res.status(404).render("pages/error.njk", { message: "NPC not found." });
+    }
+    await archiveNpc(npc.id);
+    req.session.flash = { success: `"${npc.name}" has been archived.` };
+    res.redirect(`/campaigns/${res.locals.campaign.slug}/npcs`);
   }
 );
 

@@ -187,6 +187,7 @@ export const characters = pgTable("characters", {
   name: text("name").notNull(),
   description: text("description"),
   status: characterStatusEnum("status").notNull().default("active"),
+  archivedAt: timestamp("archived_at"),
   ...timestamps,
 });
 
@@ -206,6 +207,7 @@ export const locations = pgTable("locations", {
   createdBy: uuid("created_by")
     .notNull()
     .references(() => users.id),
+  archivedAt: timestamp("archived_at"),
   ...timestamps,
 });
 
@@ -237,6 +239,7 @@ export const npcs = pgTable("npcs", {
   createdBy: uuid("created_by")
     .notNull()
     .references(() => users.id),
+  archivedAt: timestamp("archived_at"),
   ...timestamps,
 });
 
@@ -253,6 +256,7 @@ export const artifacts = pgTable("artifacts", {
   createdBy: uuid("created_by")
     .notNull()
     .references(() => users.id),
+  archivedAt: timestamp("archived_at"),
   ...timestamps,
 });
 

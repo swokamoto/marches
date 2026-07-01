@@ -7,6 +7,7 @@ import {
   createCharacter,
   updateCharacter,
   updateCharacterStatus,
+  archiveCharacter,
 } from "../services/characters.js";
 import type { CharacterStatus } from "../services/characters.js";
 
@@ -183,5 +184,25 @@ router.post(
     res.redirect(`/campaigns/${res.locals.campaign.slug}/characters/${character.id}`);
   }
 );
+
+// ─── Archive (GM/admin, or character owner) ────────────────────────────────
+
+router.post("/:characterId/archive", async (req, res) => {
+  const characterId = Array.isArray(req.params.characterId)
+    ? req.params.characterId[0]
+    : req.params.characterId;
+  const character = await getCharacterById(characterId);
+  if (!character || character.campaignId !== res.locals.campaign.id) {
+    return res.status(404).render("pages/error.njk", { message: "Character not found." });
+  }
+  const isGm = ["gm", "admin"].includes(res.locals.member.role);
+  const isOwner = character.playerId === req.session.userId;
+  if (!isGm && !isOwner) {
+    return res.status(403).render("pages/error.njk", { status: 403, message: "Not authorised." });
+  }
+  await archiveCharacter(character.id);
+  req.session.flash = { success: `"${character.name}" has been archived.` };
+  res.redirect(`/campaigns/${res.locals.campaign.slug}/characters`);
+});
 
 export default router;

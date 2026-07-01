@@ -1,6 +1,6 @@
 import { db } from "../db/index.js";
 import { artifacts } from "../db/schema.js";
-import { eq } from "drizzle-orm";
+import { eq, and, isNull } from "drizzle-orm";
 import type { InferSelectModel } from "drizzle-orm";
 
 export type Artifact = InferSelectModel<typeof artifacts>;
@@ -8,7 +8,7 @@ export type ArtifactStatus = Artifact["status"];
 
 export async function getArtifacts(campaignId: string) {
   return db.query.artifacts.findMany({
-    where: eq(artifacts.campaignId, campaignId),
+    where: and(eq(artifacts.campaignId, campaignId), isNull(artifacts.archivedAt)),
     orderBy: (a, { asc }) => [asc(a.name)],
   });
 }
@@ -64,8 +64,17 @@ export async function updateArtifactLocation(
 
 export async function getArtifactsWithLocation(campaignId: string) {
   return db.query.artifacts.findMany({
-    where: eq(artifacts.campaignId, campaignId),
+    where: and(eq(artifacts.campaignId, campaignId), isNull(artifacts.archivedAt)),
     orderBy: (a, { asc }) => [asc(a.name)],
     with: { location: { columns: { id: true, name: true } } },
   });
+}
+
+export async function archiveArtifact(artifactId: string) {
+  const [updated] = await db
+    .update(artifacts)
+    .set({ archivedAt: new Date(), updatedAt: new Date() })
+    .where(eq(artifacts.id, artifactId))
+    .returning();
+  return updated;
 }

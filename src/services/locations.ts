@@ -1,6 +1,6 @@
 import { db } from "../db/index.js";
 import { locations } from "../db/schema.js";
-import { eq, and } from "drizzle-orm";
+import { eq, and, isNull } from "drizzle-orm";
 import type { InferSelectModel } from "drizzle-orm";
 
 export type Location = InferSelectModel<typeof locations>;
@@ -41,7 +41,7 @@ async function uniqueLocationSlug(
 
 export async function getLocations(campaignId: string) {
   return db.query.locations.findMany({
-    where: eq(locations.campaignId, campaignId),
+    where: and(eq(locations.campaignId, campaignId), isNull(locations.archivedAt)),
     orderBy: (l, { asc }) => [asc(l.name)],
   });
 }
@@ -98,5 +98,14 @@ export async function updateLocationStatus(
     .where(eq(locations.id, locationId))
     .returning();
 
+  return updated;
+}
+
+export async function archiveLocation(locationId: string) {
+  const [updated] = await db
+    .update(locations)
+    .set({ archivedAt: new Date(), updatedAt: new Date() })
+    .where(eq(locations.id, locationId))
+    .returning();
   return updated;
 }

@@ -22,30 +22,37 @@
 
 {# ── Status update (GM/admin only) ── #}
 {% if member.role in ['gm', 'admin'] %}
-  <div class="mb-8 flex items-center gap-3">
-    <span class="text-sm text-stone-500">Update status:</span>
-    <form
-      hx-post="/campaigns/{{ campaign.slug }}/locations/{{ location.slug }}/status"
-      hx-target="#location-status-badge"
-      hx-swap="innerHTML"
-      class="flex items-center gap-2"
-    >
-      <select
-        name="status"
-        class="bg-stone-900 border border-stone-700 rounded px-3 py-1.5 text-sm text-stone-300
-               focus:outline-none focus:border-stone-500"
+  <div class="mb-8 flex flex-wrap items-center gap-4">
+    <div class="flex items-center gap-3">
+      <span class="text-sm text-stone-500">Update status:</span>
+      <form
+        hx-post="/campaigns/{{ campaign.slug }}/locations/{{ location.slug }}/status"
+        hx-target="#location-status-badge"
+        hx-swap="innerHTML"
+        class="flex items-center gap-2"
       >
-        {% for s in ['open', 'active', 'ruined', 'destroyed', 'unknown'] %}
-          <option value="{{ s }}" {% if location.status === s %}selected{% endif %}>{{ s }}</option>
-        {% endfor %}
-      </select>
-      <button
-        type="submit"
-        class="px-3 py-1.5 text-sm border border-stone-700 text-stone-400 rounded
-               hover:border-stone-500 transition-colors"
-      >
-        Save
-      </button>
+        <select
+          name="status"
+          class="bg-stone-900 border border-stone-700 rounded px-3 py-1.5 text-sm text-stone-300
+                 focus:outline-none focus:border-stone-500"
+        >
+          {% for s in ['open', 'active', 'ruined', 'destroyed', 'unknown'] %}
+            <option value="{{ s }}" {% if location.status === s %}selected{% endif %}>{{ s }}</option>
+          {% endfor %}
+        </select>
+        <button
+          type="submit"
+          class="px-3 py-1.5 text-sm border border-stone-700 text-stone-400 rounded
+                 hover:border-stone-500 transition-colors"
+        >
+          Save
+        </button>
+      </form>
+    </div>
+
+    <form method="POST" action="/campaigns/{{ campaign.slug }}/locations/{{ location.slug }}/archive"
+          onsubmit="return confirm('Archive {{ location.name }}? It will be hidden from all lists.')">
+      <button type="submit" class="px-3 py-1.5 text-sm border border-stone-800 text-stone-600 rounded hover:border-red-800 hover:text-red-500 transition-colors">Archive</button>
     </form>
   </div>
 {% endif %}

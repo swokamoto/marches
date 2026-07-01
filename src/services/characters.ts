@@ -1,6 +1,6 @@
 import { db } from "../db/index.js";
 import { characters } from "../db/schema.js";
-import { eq, and } from "drizzle-orm";
+import { eq, and, isNull } from "drizzle-orm";
 import type { InferSelectModel } from "drizzle-orm";
 
 export type Character = InferSelectModel<typeof characters>;
@@ -10,7 +10,7 @@ export type CharacterStatus = Character["status"];
 
 export async function getCharacters(campaignId: string) {
   return db.query.characters.findMany({
-    where: eq(characters.campaignId, campaignId),
+    where: and(eq(characters.campaignId, campaignId), isNull(characters.archivedAt)),
     orderBy: (c, { asc }) => [asc(c.name)],
     with: { player: { columns: { id: true, displayName: true } } },
   });
@@ -79,6 +79,15 @@ export async function updateCharacterStatus(
   const [character] = await db
     .update(characters)
     .set({ status, updatedAt: new Date() })
+    .where(eq(characters.id, id))
+    .returning();
+  return character;
+}
+
+export async function archiveCharacter(id: string): Promise<Character> {
+  const [character] = await db
+    .update(characters)
+    .set({ archivedAt: new Date(), updatedAt: new Date() })
     .where(eq(characters.id, id))
     .returning();
   return character;

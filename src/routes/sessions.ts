@@ -3,6 +3,7 @@ import { requireCampaignRole } from "../middleware/campaign.js";
 import {
   createSession,
   getSessionById,
+  getSessionsForCampaign,
   updateSessionStatus,
   getOrCreateReport,
   submitPlayerNote,
@@ -54,6 +55,12 @@ export async function createSessionHandler(
   req.session.flash = { success: "Session started." };
   res.redirect(`/campaigns/${res.locals.campaign.slug}/sessions/${session.id}`);
 }
+
+// ─── Campaign sessions index ──────────────────────────────────────────────────
+router.get("/", async (req, res) => {
+  const sessions = await getSessionsForCampaign(res.locals.campaign.id);
+  res.render("pages/sessions/index.njk", { title: "Sessions", sessions });
+});
 
 // ─── Session detail ───────────────────────────────────────────────────────────
 

@@ -1,6 +1,6 @@
 import { db } from "../db/index.js";
 import { npcs } from "../db/schema.js";
-import { eq, and } from "drizzle-orm";
+import { eq, and, isNull } from "drizzle-orm";
 import type { InferSelectModel } from "drizzle-orm";
 
 export type Npc = InferSelectModel<typeof npcs>;
@@ -8,7 +8,7 @@ export type NpcStatus = Npc["status"];
 
 export async function getNpcs(campaignId: string) {
   return db.query.npcs.findMany({
-    where: eq(npcs.campaignId, campaignId),
+    where: and(eq(npcs.campaignId, campaignId), isNull(npcs.archivedAt)),
     orderBy: (n, { asc }) => [asc(n.name)],
   });
 }
@@ -61,8 +61,17 @@ export async function updateNpcLocation(
 
 export async function getNpcsWithLocation(campaignId: string) {
   return db.query.npcs.findMany({
-    where: eq(npcs.campaignId, campaignId),
+    where: and(eq(npcs.campaignId, campaignId), isNull(npcs.archivedAt)),
     orderBy: (n, { asc }) => [asc(n.name)],
     with: { location: { columns: { id: true, name: true } } },
   });
+}
+
+export async function archiveNpc(npcId: string) {
+  const [updated] = await db
+    .update(npcs)
+    .set({ archivedAt: new Date(), updatedAt: new Date() })
+    .where(eq(npcs.id, npcId))
+    .returning();
+  return updated;
 }
