@@ -648,3 +648,46 @@ export const expeditionParticipantsRelations = relations(
     }),
   })
 );
+
+export const sessionParticipantsRelations = relations(
+  sessionParticipants,
+  ({ one }) => ({
+    session: one(sessions, {
+      fields: [sessionParticipants.sessionId],
+      references: [sessions.id],
+    }),
+    character: one(characters, {
+      fields: [sessionParticipants.characterId],
+      references: [characters.id],
+    }),
+  })
+);
+
+export const sessionPlayerNotesRelations = relations(
+  sessionPlayerNotes,
+  ({ one }) => ({
+    session: one(sessions, {
+      fields: [sessionPlayerNotes.sessionId],
+      references: [sessions.id],
+    }),
+    player: one(users, {
+      fields: [sessionPlayerNotes.playerId],
+      references: [users.id],
+    }),
+    character: one(characters, {
+      fields: [sessionPlayerNotes.characterId],
+      references: [characters.id],
+    }),
+  })
+);
+
+export const worldChangesRelations = relations(worldChanges, ({ one }) => ({
+  sessionReport: one(sessionReports, {
+    fields: [worldChanges.sessionReportId],
+    references: [sessionReports.id],
+  }),
+  createdBy: one(users, {
+    fields: [worldChanges.createdBy],
+    references: [users.id],
+  }),
+}));
