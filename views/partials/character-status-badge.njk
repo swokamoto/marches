@@ -1,0 +1,7 @@
+{# Expects: character #}
+<span class="text-xs capitalize px-2 py-0.5 rounded border
+  {% if character.status === 'active' %}text-green-600 border-green-900
+  {% elif character.status === 'dead' %}text-red-700 border-red-900
+  {% else %}text-stone-500 border-stone-700{% endif %}">
+  {{ character.status }}
+</span>

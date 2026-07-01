@@ -1,0 +1,45 @@
+{% extends "layouts/base.njk" %}
+{% block content %}
+
+<div class="flex items-center justify-between mb-6">
+  <h1 class="text-2xl font-semibold text-stone-100">
+    {% if isGm %}All Characters{% else %}My Characters{% endif %}
+  </h1>
+  <a href="/campaigns/{{ campaign.slug }}/characters/new"
+     class="px-4 py-2 text-sm border border-stone-700 text-stone-400 rounded hover:border-stone-500 transition-colors">
+    + New character
+  </a>
+</div>
+
+{% if characterList.length === 0 %}
+  <p class="text-stone-600 text-sm">
+    {% if isGm %}No characters yet.{% else %}You haven't created any characters. <a href="/campaigns/{{ campaign.slug }}/characters/new" class="text-stone-400 hover:text-stone-200 underline">Create one</a> to join expeditions.{% endif %}
+  </p>
+{% else %}
+  <div class="space-y-2">
+    {% for char in characterList %}
+      <a href="/campaigns/{{ campaign.slug }}/characters/{{ char.id }}"
+         class="flex items-center justify-between bg-stone-900 border border-stone-800 rounded px-4 py-3 hover:border-stone-700 transition-colors group">
+        <div class="flex items-center gap-3">
+          <span class="text-stone-200 font-medium group-hover:text-stone-100">{{ char.name }}</span>
+          {% if char.description %}
+            <span class="text-stone-500 text-sm truncate max-w-xs">{{ char.description }}</span>
+          {% endif %}
+        </div>
+        <div class="flex items-center gap-3">
+          {% if isGm %}
+            <span class="text-xs text-stone-600">{{ char.player.displayName }}</span>
+          {% endif %}
+          <span class="text-xs capitalize px-2 py-0.5 rounded border
+            {% if char.status === 'active' %}text-green-600 border-green-900
+            {% elif char.status === 'dead' %}text-red-700 border-red-900
+            {% else %}text-stone-500 border-stone-700{% endif %}">
+            {{ char.status }}
+          </span>
+        </div>
+      </a>
+    {% endfor %}
+  </div>
+{% endif %}
+
+{% endblock %}
