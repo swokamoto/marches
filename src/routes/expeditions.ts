@@ -21,6 +21,7 @@ import { getArtifacts } from "../services/artifacts.js";
 import { detectConflicts } from "../services/conflicts.js";
 import { createSession } from "../services/sessions.js";
 import { logActivity } from "../services/activity.js";
+import { calcCampaignDay } from "../services/campaigns.js";
 
 const router = Router({ mergeParams: true });
 
@@ -119,6 +120,7 @@ router.get("/:expeditionId", async (req, res) => {
     campaignArtifacts,
     conflicts,
     nextStatus,
+    currentCampaignDay: calcCampaignDay(res.locals.campaign.createdAt),
   });
 });
 
@@ -154,6 +156,7 @@ router.post(
       return res.render("partials/expedition-status-zone.njk", {
         expedition: updated,
         nextStatus: STATUS_PIPELINE[next] ?? null,
+        currentCampaignDay: calcCampaignDay(res.locals.campaign.createdAt),
       });
     }
 

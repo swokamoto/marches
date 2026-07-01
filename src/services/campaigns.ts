@@ -61,6 +61,11 @@ export async function getCampaignMember(campaignId: string, userId: string) {
 
 // ─── Mutations ────────────────────────────────────────────────────────────────
 
+/** Returns the in-world day number (1-based) relative to when the campaign started. */
+export function calcCampaignDay(campaignCreatedAt: Date, at: Date = new Date()): number {
+  return Math.floor((at.getTime() - campaignCreatedAt.getTime()) / 86_400_000) + 1;
+}
+
 export async function createCampaign(
   name: string,
   description: string | undefined,

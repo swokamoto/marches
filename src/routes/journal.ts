@@ -2,6 +2,7 @@ import { Router } from "express";
 import { requireCampaignRole } from "../middleware/campaign.js";
 import { getJournalEntries, createJournalEntry } from "../services/journal.js";
 import type { JournalEntityType, JournalVisibility } from "../services/journal.js";
+import { calcCampaignDay } from "../services/campaigns.js";
 
 const router = Router({ mergeParams: true });
 
@@ -40,6 +41,7 @@ router.get("/:entityType/:entityId", async (req, res) => {
     page,
     totalPages,
     total,
+    currentCampaignDay: calcCampaignDay(res.locals.campaign.createdAt),
   });
 });
 
@@ -85,7 +87,7 @@ router.post("/:entityType/:entityId", async (req, res) => {
     entityId: req.params.entityId,
     body,
     visibility: resolvedVisibility,
-    campaignDay: campaign_day ? parseInt(campaign_day) : undefined,
+    campaignDay: campaign_day ? parseInt(campaign_day) : calcCampaignDay(res.locals.campaign.createdAt),
   });
 
   // Return updated entries partial for HTMX swap
@@ -101,6 +103,7 @@ router.post("/:entityType/:entityId", async (req, res) => {
     entries,
     entityType,
     entityId: req.params.entityId,
+    currentCampaignDay: calcCampaignDay(res.locals.campaign.createdAt),
   });
 });
 

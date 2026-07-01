@@ -6,7 +6,7 @@
     {% if nextStatus %}
       <form hx-post="/campaigns/{{ campaign.slug }}/expeditions/{{ expedition.id }}/advance"
             hx-target="#expedition-status-zone"
-            hx-swap="outerHTML">
+            hx-swap="innerHTML">
         <button type="submit"
                 class="px-4 py-1.5 text-sm border border-stone-700 text-stone-400 rounded hover:border-stone-500 transition-colors">
           Advance to {{ nextStatus }} →
@@ -22,3 +22,18 @@
     </form>
   {% endif %}
 </div>
+
+{% if member.role in ['gm', 'admin'] and expedition.status === 'active' %}
+  <div class="mt-4 flex items-center gap-4">
+    <form method="POST"
+          action="/campaigns/{{ campaign.slug }}/expeditions/{{ expedition.id }}/sessions/create"
+          class="flex items-center gap-3">
+      <input type="number" name="campaign_day" value="{{ currentCampaignDay }}" min="1"
+             class="w-36 bg-stone-900 border border-stone-700 rounded px-3 py-1.5 text-sm text-stone-300 focus:outline-none focus:border-stone-500"/>
+      <button type="submit"
+              class="px-4 py-2 bg-stone-100 text-stone-900 text-sm font-medium rounded hover:bg-white transition-colors">
+        Start session
+      </button>
+    </form>
+  </div>
+{% endif %}

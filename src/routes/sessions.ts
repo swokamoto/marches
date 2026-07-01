@@ -18,6 +18,7 @@ import type { WorldChangeType } from "../services/world-changes.js";
 import { getLocations } from "../services/locations.js";
 import { getNpcs } from "../services/npcs.js";
 import { logActivity } from "../services/activity.js";
+import { calcCampaignDay } from "../services/campaigns.js";
 
 const router = Router({ mergeParams: true });
 
@@ -43,13 +44,17 @@ export async function createSessionHandler(
   res: import("express").Response
 ): Promise<void> {
   const { campaign_day } = req.body as { campaign_day?: string };
+  const playedAt = new Date();
+  const campaignDay = campaign_day
+    ? parseInt(campaign_day)
+    : calcCampaignDay(res.locals.campaign.createdAt, playedAt);
 
   const session = await createSession({
     expeditionId: req.params.expeditionId as string,
     gmId: req.session.userId!,
     campaignId: res.locals.campaign.id,
-    campaignDay: campaign_day ? parseInt(campaign_day) : undefined,
-    playedAt: new Date(),
+    campaignDay,
+    playedAt,
   });
 
   req.session.flash = { success: "Session started." };

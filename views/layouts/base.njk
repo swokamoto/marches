@@ -33,7 +33,7 @@
           <div class="flex items-center gap-4 text-sm">
             {% macro navlink(href, label) %}
               <a href="{{ href }}"
-                 class="{{ 'text-stone-100' if currentPath and currentPath.startswith(href) else 'text-stone-400 hover:text-stone-100' }}">
+                 class="{{ 'text-stone-100' if currentPath and currentPath.startsWith(href) else 'text-stone-400 hover:text-stone-100' }}">
                 {{ label }}
               </a>
             {% endmacro %}
