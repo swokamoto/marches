@@ -11,6 +11,7 @@ export function flashMiddleware(
   next: NextFunction
 ): void {
   res.locals.flash = req.session.flash ?? null;
+  res.locals.requestPath = req.path === "/" ? req.path : req.path.replace(/\/$/, "");
   delete req.session.flash;
   next();
 }

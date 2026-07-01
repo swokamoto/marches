@@ -54,7 +54,8 @@
 
 <div id="journal-section"
      hx-get="/campaigns/{{ campaign.slug }}/journal/npc/{{ npc.id }}"
-     hx-trigger="load" hx-swap="outerHTML">
-  <p class="text-stone-600 text-sm">Loading records...</p>
+     hx-trigger="load" hx-swap="outerHTML"
+     hx-on::error="this.innerHTML='<p class=text-red-700 text-sm>Failed to load records.</p>'">
+  <p class="text-stone-600 text-sm htmx-indicator">Loading records...</p>
 </div>
 {% endblock %}

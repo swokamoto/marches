@@ -6,6 +6,14 @@
   <title>{% if title %}{{ title }} — {% endif %}Marches</title>
   <link rel="stylesheet" href="/css/app.css" />
   <script src="/js/htmx.min.js" defer></script>
+  <style>
+    /* HTMX loading indicator */
+    .htmx-indicator { opacity: 0; transition: opacity 200ms ease; }
+    .htmx-request .htmx-indicator,
+    .htmx-request.htmx-indicator { opacity: 1; }
+    /* Disable submit buttons during HTMX requests */
+    .htmx-request [type="submit"] { pointer-events: none; opacity: 0.5; }
+  </style>
 </head>
 <body class="bg-stone-950 text-stone-100 min-h-screen">
 
@@ -21,15 +29,22 @@
           <a href="/campaigns/{{ campaign.slug }}" class="text-stone-300 hover:text-stone-100">
             {{ campaign.name }}
           </a>
+          {% set currentPath = requestPath %}
           <div class="flex items-center gap-4 text-sm">
-            <a href="/campaigns/{{ campaign.slug }}/locations" class="text-stone-400 hover:text-stone-100">Locations</a>
-            <a href="/campaigns/{{ campaign.slug }}/npcs" class="text-stone-400 hover:text-stone-100">NPCs</a>
-            <a href="/campaigns/{{ campaign.slug }}/artifacts" class="text-stone-400 hover:text-stone-100">Artifacts</a>
-            <a href="/campaigns/{{ campaign.slug }}/expeditions" class="text-stone-400 hover:text-stone-100">Expeditions</a>
-            <a href="/campaigns/{{ campaign.slug }}/characters" class="text-stone-400 hover:text-stone-100">Characters</a>
-            <a href="/campaigns/{{ campaign.slug }}/timeline" class="text-stone-400 hover:text-stone-100">Timeline</a>
+            {% macro navlink(href, label) %}
+              <a href="{{ href }}"
+                 class="{{ 'text-stone-100' if currentPath and currentPath.startswith(href) else 'text-stone-400 hover:text-stone-100' }}">
+                {{ label }}
+              </a>
+            {% endmacro %}
+            {{ navlink('/campaigns/' + campaign.slug + '/locations', 'Locations') }}
+            {{ navlink('/campaigns/' + campaign.slug + '/npcs', 'NPCs') }}
+            {{ navlink('/campaigns/' + campaign.slug + '/artifacts', 'Artifacts') }}
+            {{ navlink('/campaigns/' + campaign.slug + '/expeditions', 'Expeditions') }}
+            {{ navlink('/campaigns/' + campaign.slug + '/characters', 'Characters') }}
+            {{ navlink('/campaigns/' + campaign.slug + '/timeline', 'Timeline') }}
             {% if member and member.role in ['gm', 'admin'] %}
-              <a href="/campaigns/{{ campaign.slug }}/members" class="text-stone-400 hover:text-stone-100">Members</a>
+              {{ navlink('/campaigns/' + campaign.slug + '/members', 'Members') }}
             {% endif %}
           </div>
         {% endif %}
@@ -38,7 +53,10 @@
       <div class="flex items-center gap-4 text-sm">
         {% if user %}
           <span class="text-stone-500">{{ user.displayName }}</span>
-          <a href="/auth/logout" class="text-stone-400 hover:text-stone-100">Sign out</a>
+          <a href="/dashboard" class="text-stone-600 hover:text-stone-400 text-xs">Dashboard</a>
+          <a href="/auth/logout"
+             onclick="return confirm('Sign out?')"
+             class="text-stone-400 hover:text-stone-100">Sign out</a>
         {% else %}
           <a href="/auth/login" class="text-stone-400 hover:text-stone-100">Sign in</a>
         {% endif %}
@@ -46,6 +64,12 @@
 
     </nav>
   </header>
+
+  {# ── HTMX global loading bar ── #}
+  <div id="htmx-loading-bar"
+       class="htmx-indicator fixed top-0 left-0 right-0 h-0.5 bg-stone-500 z-50"
+       hx-trigger="htmx:beforeRequest from:body"
+       aria-hidden="true"></div>
 
   {# ── Role badge (shown when inside a campaign) ── #}
   {% if member %}
