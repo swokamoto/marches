@@ -22,18 +22,24 @@ router.get("/:entityType/:entityId", async (req, res) => {
     return res.status(400).send("Invalid entity type.");
   }
 
-  const entries = await getJournalEntries(
+  const page = Math.max(1, parseInt(String(req.query.page ?? "1")));
+
+  const { entries, total, totalPages } = await getJournalEntries(
     res.locals.campaign.id,
     entityType,
     req.params.entityId,
     req.session.userId!,
-    res.locals.member.role
+    res.locals.member.role,
+    page
   );
 
   res.render("partials/journal-entries.njk", {
     entries,
     entityType,
     entityId: req.params.entityId,
+    page,
+    totalPages,
+    total,
   });
 });
 

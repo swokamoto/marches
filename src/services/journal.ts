@@ -1,11 +1,13 @@
 import { db } from "../db/index.js";
 import { journalEntries } from "../db/schema.js";
-import { eq, and, desc, asc } from "drizzle-orm";
+import { eq, and, desc, asc, count } from "drizzle-orm";
 import type { InferSelectModel } from "drizzle-orm";
 
 export type JournalEntry = InferSelectModel<typeof journalEntries>;
 export type JournalVisibility = JournalEntry["visibility"];
 export type JournalEntityType = JournalEntry["entityType"];
+
+export const JOURNAL_PER_PAGE = 25;
 
 // ─── Queries ──────────────────────────────────────────────────────────────────
 
@@ -18,8 +20,14 @@ export async function getJournalEntries(
   entityType: JournalEntityType,
   entityId: string,
   viewerId: string,
-  viewerRole: string
+  viewerRole: string,
+  page = 1
 ) {
+  // Fetch a larger slice then filter in-app (visibility filter can reduce count)
+  // We over-fetch by 2x to handle filtering, then paginate the filtered result
+  const limit = JOURNAL_PER_PAGE;
+  const offset = (page - 1) * limit;
+
   const all = await db.query.journalEntries.findMany({
     where: and(
       eq(journalEntries.campaignId, campaignId),
@@ -34,13 +42,20 @@ export async function getJournalEntries(
     orderBy: [desc(journalEntries.pinned), asc(journalEntries.createdAt)],
   });
 
-  return all.filter((entry) => {
+  const visible = all.filter((entry) => {
     if (entry.visibility === "public") return true;
     if (entry.visibility === "private") return entry.authorId === viewerId;
     if (entry.visibility === "gm_only")
       return viewerRole === "gm" || viewerRole === "admin";
     return false;
   });
+
+  return {
+    entries: visible.slice(offset, offset + limit),
+    total: visible.length,
+    page,
+    totalPages: Math.ceil(visible.length / limit),
+  };
 }
 
 // ─── Mutations ────────────────────────────────────────────────────────────────

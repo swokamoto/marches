@@ -32,11 +32,18 @@ const STATUS_PIPELINE: Record<string, string> = {
 
 // ─── List ─────────────────────────────────────────────────────────────────────
 
-router.get("/", async (_req, res) => {
-  const expeditionList = await getExpeditions(res.locals.campaign.id);
+router.get("/", async (req, res) => {
+  const page = Math.max(1, parseInt(String(req.query.page ?? "1")));
+  const { expeditions: expeditionList, total, totalPages } = await getExpeditions(
+    res.locals.campaign.id,
+    page
+  );
   res.render("pages/expeditions/index.njk", {
     title: `Expeditions — ${res.locals.campaign.name}`,
     expeditionList,
+    page,
+    totalPages,
+    total,
   });
 });
 

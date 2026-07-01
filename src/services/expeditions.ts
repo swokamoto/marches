@@ -7,22 +7,34 @@ import {
   expeditionParticipants,
   characters,
 } from "../db/schema.js";
-import { eq, and } from "drizzle-orm";
+import { eq, and, count } from "drizzle-orm";
 import type { InferSelectModel } from "drizzle-orm";
 
 export type Expedition = InferSelectModel<typeof expeditions>;
 export type ExpeditionStatus = Expedition["status"];
 
+export const EXPEDITIONS_PER_PAGE = 20;
+
 // ─── Queries ──────────────────────────────────────────────────────────────────
 
-export async function getExpeditions(campaignId: string) {
-  return db.query.expeditions.findMany({
-    where: eq(expeditions.campaignId, campaignId),
-    with: {
-      gm: { columns: { id: true, displayName: true } },
-    },
-    orderBy: (e, { desc }) => [desc(e.createdAt)],
-  });
+export async function getExpeditions(campaignId: string, page = 1) {
+  const offset = (page - 1) * EXPEDITIONS_PER_PAGE;
+  const [rows, [{ total }]] = await Promise.all([
+    db.query.expeditions.findMany({
+      where: eq(expeditions.campaignId, campaignId),
+      with: { gm: { columns: { id: true, displayName: true } } },
+      orderBy: (e, { desc }) => [desc(e.createdAt)],
+      limit: EXPEDITIONS_PER_PAGE,
+      offset,
+    }),
+    db.select({ total: count() }).from(expeditions).where(eq(expeditions.campaignId, campaignId)),
+  ]);
+  return {
+    expeditions: rows,
+    total: Number(total),
+    page,
+    totalPages: Math.ceil(Number(total) / EXPEDITIONS_PER_PAGE),
+  };
 }
 
 export async function getExpeditionById(id: string) {

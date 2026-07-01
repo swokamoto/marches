@@ -23,6 +23,9 @@
           <span class="font-medium text-stone-100">{{ npc.name }}</span>
           {% include "partials/npc-status-badge.njk" %}
         </div>
+        {% if npc.location %}
+          <p class="text-xs text-stone-600 mt-1">@ {{ npc.location.name }}</p>
+        {% endif %}
       </a>
     {% endfor %}
   </div>

@@ -681,8 +681,29 @@ export const sessionPlayerNotesRelations = relations(
   })
 );
 
-export const worldEventsRelations = relations(worldEvents, ({ one }) => ({
+export const npcsRelations = relations(npcs, ({ one }) => ({
   campaign: one(campaigns, {
+    fields: [npcs.campaignId],
+    references: [campaigns.id],
+  }),
+  location: one(locations, {
+    fields: [npcs.locationId],
+    references: [locations.id],
+  }),
+}));
+
+export const artifactsRelations = relations(artifacts, ({ one }) => ({
+  campaign: one(campaigns, {
+    fields: [artifacts.campaignId],
+    references: [campaigns.id],
+  }),
+  location: one(locations, {
+    fields: [artifacts.locationId],
+    references: [locations.id],
+  }),
+}));
+
+export const worldEventsRelations = relations(worldEvents, ({ one }) => ({  campaign: one(campaigns, {
     fields: [worldEvents.campaignId],
     references: [campaigns.id],
   }),

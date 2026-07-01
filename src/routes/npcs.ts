@@ -1,11 +1,12 @@
 import { Router } from "express";
 import { requireCampaignRole } from "../middleware/campaign.js";
-import { getNpcs, getNpcById, createNpc, updateNpcStatus, searchNpcs } from "../services/npcs.js";
+import { getNpcs, getNpcById, createNpc, updateNpcStatus, searchNpcs, updateNpcLocation, getNpcsWithLocation } from "../services/npcs.js";
+import { getLocations } from "../services/locations.js";
 
 const router = Router({ mergeParams: true });
 
 router.get("/", async (_req, res) => {
-  const npcList = await getNpcs(res.locals.campaign.id);
+  const npcList = await getNpcsWithLocation(res.locals.campaign.id);
   res.render("pages/npcs/index.njk", {
     title: `NPCs — ${res.locals.campaign.name}`,
     npcList,
@@ -39,9 +40,13 @@ router.get("/:npcId", async (req, res) => {
   if (!npc || npc.campaignId !== res.locals.campaign.id) {
     return res.status(404).render("pages/error.njk", { message: "NPC not found." });
   }
+  const campaignLocations = await getLocations(res.locals.campaign.id);
+  const isGm = ["gm", "admin"].includes(res.locals.member.role);
   res.render("pages/npcs/show.njk", {
     title: `${npc.name} — ${res.locals.campaign.name}`,
     npc,
+    campaignLocations,
+    isGm,
   });
 });
 
@@ -67,6 +72,22 @@ router.post(
     if (req.headers["hx-request"]) {
       return res.render("partials/npc-status-badge.njk", { npc: updated });
     }
+    res.redirect(`/campaigns/${res.locals.campaign.slug}/npcs/${npc.id}`);
+  }
+);
+
+router.post(
+  "/:npcId/location",
+  requireCampaignRole("gm", "admin"),
+  async (req, res) => {
+    const npcId = Array.isArray(req.params.npcId) ? req.params.npcId[0] : req.params.npcId;
+    const npc = await getNpcById(npcId);
+    if (!npc || npc.campaignId !== res.locals.campaign.id) {
+      return res.status(404).render("pages/error.njk", { message: "NPC not found." });
+    }
+    const { location_id } = req.body as { location_id: string };
+    await updateNpcLocation(npc.id, location_id || null);
+    req.session.flash = { success: "Location updated." };
     res.redirect(`/campaigns/${res.locals.campaign.slug}/npcs/${npc.id}`);
   }
 );

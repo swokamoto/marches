@@ -1,0 +1,40 @@
+{% extends "layouts/base.njk" %}
+{% block content %}
+
+<div class="max-w-lg">
+  <div class="flex items-center gap-3 mb-6">
+    <a href="/campaigns/{{ campaign.slug }}" class="text-xs text-stone-600 hover:text-stone-400">← Dashboard</a>
+  </div>
+  <h1 class="text-2xl font-semibold text-stone-100 mb-6">Campaign Settings</h1>
+
+  <form method="POST" action="/campaigns/{{ campaign.slug }}/settings" class="space-y-5">
+
+    <div>
+      <label class="block text-sm text-stone-400 mb-1.5" for="name">Campaign name</label>
+      <input id="name" name="name" type="text" required
+             value="{{ campaign.name }}"
+             class="w-full bg-stone-900 border border-stone-700 rounded px-3 py-2 text-stone-100 text-sm
+                    focus:outline-none focus:border-stone-500 transition-colors" />
+    </div>
+
+    <div>
+      <label class="block text-sm text-stone-400 mb-1.5" for="description">
+        Description <span class="text-stone-600">(optional)</span>
+      </label>
+      <textarea id="description" name="description" rows="3"
+                class="w-full bg-stone-900 border border-stone-700 rounded px-3 py-2 text-stone-100 text-sm
+                       focus:outline-none focus:border-stone-500 transition-colors resize-none">{{ campaign.description }}</textarea>
+    </div>
+
+    <div class="flex items-center gap-3 pt-1">
+      <button type="submit"
+              class="px-5 py-2 bg-stone-100 text-stone-900 font-medium text-sm rounded hover:bg-white transition-colors">
+        Save
+      </button>
+      <a href="/campaigns/{{ campaign.slug }}"
+         class="text-sm text-stone-600 hover:text-stone-400">Cancel</a>
+    </div>
+  </form>
+</div>
+
+{% endblock %}

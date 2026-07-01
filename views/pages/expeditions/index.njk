@@ -11,7 +11,7 @@
   {% endif %}
 </div>
 
-{% if expeditionList.length === 0 %}
+{% if expeditionList.length === 0 and page === 1 %}
   <div class="border border-dashed border-stone-800 rounded p-12 text-center">
     <p class="text-stone-500">No expeditions yet.</p>
   </div>
@@ -31,6 +31,22 @@
       </a>
     {% endfor %}
   </div>
+
+  {# Pagination #}
+  {% if totalPages > 1 %}
+    <div class="flex items-center justify-between mt-6 text-sm text-stone-500">
+      <span>{{ total }} expedition{{ 's' if total !== 1 }}</span>
+      <div class="flex items-center gap-2">
+        {% if page > 1 %}
+          <a href="?page={{ page - 1 }}" class="px-3 py-1.5 border border-stone-700 rounded hover:border-stone-500 transition-colors">← Prev</a>
+        {% endif %}
+        <span class="text-stone-600">{{ page }} / {{ totalPages }}</span>
+        {% if page < totalPages %}
+          <a href="?page={{ page + 1 }}" class="px-3 py-1.5 border border-stone-700 rounded hover:border-stone-500 transition-colors">Next →</a>
+        {% endif %}
+      </div>
+    </div>
+  {% endif %}
 {% endif %}
 
 {% endblock %}

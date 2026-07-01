@@ -3,10 +3,12 @@ import { requireAuth } from "../middleware/auth.js";
 import {
   loadCampaign,
   requireCampaignMember,
+  requireCampaignRole,
 } from "../middleware/campaign.js";
 import {
   createCampaign,
   getUserCampaigns,
+  updateCampaign,
 } from "../services/campaigns.js";
 import locationsRouter from "./locations.js";
 import npcsRouter from "./npcs.js";
@@ -74,6 +76,37 @@ router.use("/:slug/characters", loadCampaign, requireCampaignMember, charactersR
 router.use("/:slug/timeline", loadCampaign, requireCampaignMember, timelineRouter);
 router.use("/:slug/members", loadCampaign, requireCampaignMember, membersRouter);
 
+// ─── Campaign settings ─────────────────────────────────────────────
+
+router.get(
+  "/:slug/settings",
+  loadCampaign,
+  requireCampaignMember,
+  requireCampaignRole("admin"),
+  (_req, res) => {
+    res.render("pages/campaigns/settings.njk", {
+      title: `Settings — ${res.locals.campaign.name}`,
+    });
+  }
+);
+
+router.post(
+  "/:slug/settings",
+  loadCampaign,
+  requireCampaignMember,
+  requireCampaignRole("admin"),
+  async (req, res) => {
+    const { name, description } = req.body as { name: string; description?: string };
+    if (!name?.trim()) {
+      req.session.flash = { error: "Campaign name is required." };
+      return res.redirect(`/campaigns/${res.locals.campaign.slug}/settings`);
+    }
+    await updateCampaign(res.locals.campaign.id, { name, description });
+    req.session.flash = { success: "Settings saved." };
+    res.redirect(`/campaigns/${res.locals.campaign.slug}/settings`);
+  }
+);
+
 // ─── Join campaign via invite code ────────────────────────────────────────────
 
 router.get("/join", (_req, res) => {
@@ -110,7 +143,7 @@ router.get(
   loadCampaign,
   requireCampaignMember,
   async (_req, res) => {
-    const [expeditionList, recentEvents] = await Promise.all([
+    const [{ expeditions: expeditionList }, recentEvents] = await Promise.all([
       getExpeditions(res.locals.campaign.id),
       getWorldEvents(res.locals.campaign.id),
     ]);

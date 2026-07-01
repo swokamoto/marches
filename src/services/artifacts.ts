@@ -49,3 +49,23 @@ export async function updateArtifactStatus(
     .returning();
   return updated;
 }
+
+export async function updateArtifactLocation(
+  artifactId: string,
+  locationId: string | null
+) {
+  const [updated] = await db
+    .update(artifacts)
+    .set({ locationId, updatedAt: new Date() })
+    .where(eq(artifacts.id, artifactId))
+    .returning();
+  return updated;
+}
+
+export async function getArtifactsWithLocation(campaignId: string) {
+  return db.query.artifacts.findMany({
+    where: eq(artifacts.campaignId, campaignId),
+    orderBy: (a, { asc }) => [asc(a.name)],
+    with: { location: { columns: { id: true, name: true } } },
+  });
+}

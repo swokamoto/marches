@@ -12,12 +12,18 @@
   </div>
 
   {% if member.role in ['admin', 'gm'] %}
-    <a
-      href="/campaigns/{{ campaign.slug }}/expeditions/new"
-      class="px-4 py-2 bg-stone-100 text-stone-900 text-sm font-medium rounded hover:bg-white transition-colors shrink-0"
-    >
-      New expedition
-    </a>
+    <div class="flex items-center gap-3">
+      <a href="/campaigns/{{ campaign.slug }}/expeditions/new"
+         class="px-4 py-2 bg-stone-100 text-stone-900 text-sm font-medium rounded hover:bg-white transition-colors shrink-0">
+        New expedition
+      </a>
+      {% if member.role === 'admin' %}
+        <a href="/campaigns/{{ campaign.slug }}/settings"
+           class="px-3 py-2 text-xs border border-stone-700 text-stone-500 rounded hover:border-stone-500 hover:text-stone-300 transition-colors">
+          Settings
+        </a>
+      {% endif %}
+    </div>
   {% endif %}
 </div>
 

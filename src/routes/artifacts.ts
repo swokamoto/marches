@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { requireCampaignRole } from "../middleware/campaign.js";
-import { getArtifacts, getArtifactById, createArtifact, updateArtifactStatus, searchArtifacts } from "../services/artifacts.js";
+import { getArtifacts, getArtifactById, createArtifact, updateArtifactStatus, searchArtifacts, updateArtifactLocation } from "../services/artifacts.js";
+import { getLocations } from "../services/locations.js";
 
 const router = Router({ mergeParams: true });
 
@@ -39,9 +40,13 @@ router.get("/:artifactId", async (req, res) => {
   if (!artifact || artifact.campaignId !== res.locals.campaign.id) {
     return res.status(404).render("pages/error.njk", { message: "Artifact not found." });
   }
+  const campaignLocations = await getLocations(res.locals.campaign.id);
+  const isGm = ["gm", "admin"].includes(res.locals.member.role);
   res.render("pages/artifacts/show.njk", {
     title: `${artifact.name} — ${res.locals.campaign.name}`,
     artifact,
+    campaignLocations,
+    isGm,
   });
 });
 
@@ -67,6 +72,22 @@ router.post(
     if (req.headers["hx-request"]) {
       return res.render("partials/artifact-status-badge.njk", { artifact: updated });
     }
+    res.redirect(`/campaigns/${res.locals.campaign.slug}/artifacts/${artifact.id}`);
+  }
+);
+
+router.post(
+  "/:artifactId/location",
+  requireCampaignRole("gm", "admin"),
+  async (req, res) => {
+    const artifactId = Array.isArray(req.params.artifactId) ? req.params.artifactId[0] : req.params.artifactId;
+    const artifact = await getArtifactById(artifactId);
+    if (!artifact || artifact.campaignId !== res.locals.campaign.id) {
+      return res.status(404).render("pages/error.njk", { message: "Artifact not found." });
+    }
+    const { location_id } = req.body as { location_id: string };
+    await updateArtifactLocation(artifact.id, location_id || null);
+    req.session.flash = { success: "Location updated." };
     res.redirect(`/campaigns/${res.locals.campaign.slug}/artifacts/${artifact.id}`);
   }
 );

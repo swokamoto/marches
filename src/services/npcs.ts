@@ -46,3 +46,23 @@ export async function updateNpcStatus(npcId: string, status: NpcStatus) {
     .returning();
   return updated;
 }
+
+export async function updateNpcLocation(
+  npcId: string,
+  locationId: string | null
+) {
+  const [updated] = await db
+    .update(npcs)
+    .set({ locationId, updatedAt: new Date() })
+    .where(eq(npcs.id, npcId))
+    .returning();
+  return updated;
+}
+
+export async function getNpcsWithLocation(campaignId: string) {
+  return db.query.npcs.findMany({
+    where: eq(npcs.campaignId, campaignId),
+    orderBy: (n, { asc }) => [asc(n.name)],
+    with: { location: { columns: { id: true, name: true } } },
+  });
+}

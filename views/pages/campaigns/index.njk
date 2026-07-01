@@ -3,39 +3,46 @@
 {% block content %}
 <div class="flex items-center justify-between mb-8">
   <h1 class="text-2xl font-semibold text-stone-100">My Campaigns</h1>
-  <a
-    href="/campaigns/new"
-    class="px-4 py-2 bg-stone-100 text-stone-900 text-sm font-medium rounded hover:bg-white transition-colors"
-  >
-    New campaign
-  </a>
+  <div class="flex items-center gap-3">
+    <a href="/campaigns/join"
+       class="px-4 py-2 text-sm border border-stone-700 text-stone-400 rounded hover:border-stone-500 transition-colors">
+      Join with code
+    </a>
+    <a href="/campaigns/new"
+       class="px-4 py-2 bg-stone-100 text-stone-900 text-sm font-medium rounded hover:bg-white transition-colors">
+      New campaign
+    </a>
+  </div>
 </div>
 
 {% if userCampaigns.length === 0 %}
   <div class="border border-dashed border-stone-800 rounded p-12 text-center">
     <p class="text-stone-500 mb-4">You are not a member of any campaigns yet.</p>
-    <a href="/campaigns/new" class="text-stone-300 hover:text-stone-100 text-sm">
-      Create your first campaign →
-    </a>
+    <div class="flex items-center justify-center gap-6 text-sm">
+      <a href="/campaigns/new" class="text-stone-300 hover:text-stone-100">Create a campaign →</a>
+      <a href="/campaigns/join" class="text-stone-500 hover:text-stone-300">Join with invite code →</a>
+    </div>
   </div>
 {% else %}
   <div class="grid gap-3">
     {% for c in userCampaigns %}
-      <a
-        href="/campaigns/{{ c.slug }}"
-        class="block bg-stone-900 border border-stone-800 rounded p-5 hover:border-stone-700 transition-colors"
-      >
+      <a href="/campaigns/{{ c.slug }}"
+         class="block bg-stone-900 border border-stone-800 rounded p-5 hover:border-stone-700 transition-colors group">
         <div class="flex items-start justify-between">
-          <div>
-            <h2 class="font-medium text-stone-100">{{ c.name }}</h2>
+          <div class="min-w-0">
+            <h2 class="font-medium text-stone-100 group-hover:text-white">{{ c.name }}</h2>
             {% if c.description %}
               <p class="text-stone-500 text-sm mt-1 line-clamp-2">{{ c.description }}</p>
             {% endif %}
           </div>
-          <span class="text-xs text-stone-600 border border-stone-800 rounded px-2 py-0.5 ml-4 shrink-0">
+          <span class="text-xs capitalize ml-4 shrink-0 px-2 py-0.5 rounded border
+            {% if c.role === 'admin' %}text-stone-300 border-stone-600
+            {% elif c.role === 'gm' %}text-stone-400 border-stone-700
+            {% else %}text-stone-600 border-stone-800{% endif %}">
             {{ c.role }}
           </span>
         </div>
+        <p class="text-xs text-stone-700 mt-3">{{ c.createdAt | timeago }}</p>
       </a>
     {% endfor %}
   </div>

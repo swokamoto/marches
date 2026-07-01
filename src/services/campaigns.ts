@@ -82,3 +82,20 @@ export async function createCampaign(
 
   return campaign;
 }
+
+export async function updateCampaign(
+  campaignId: string,
+  params: { name?: string; description?: string }
+) {
+  const updates: Record<string, unknown> = { updatedAt: new Date() };
+  if (params.name !== undefined) updates.name = params.name.trim();
+  if (params.description !== undefined)
+    updates.description = params.description.trim() || null;
+
+  const [updated] = await db
+    .update(campaigns)
+    .set(updates)
+    .where(eq(campaigns.id, campaignId))
+    .returning();
+  return updated;
+}

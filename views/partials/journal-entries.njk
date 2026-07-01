@@ -57,10 +57,33 @@
               <span class="text-xs text-stone-600">Day {{ e.campaignDay }}</span>
             {% endif %}
             <span class="text-xs text-stone-500">{{ e.author.displayName }}</span>
+            {% if e.visibility === 'private' %}
+              <span class="text-xs text-stone-700 italic">private</span>
+            {% endif %}
           </div>
           <p class="text-stone-400 text-sm whitespace-pre-wrap">{{ e.body }}</p>
         </div>
       {% endfor %}
+    </div>
+  </div>
+{% endif %}
+
+{# ── Pagination ── #}
+{% if totalPages > 1 %}
+  <div class="flex items-center justify-between mb-6 text-xs text-stone-600">
+    <span>{{ total }} entr{{ 'ies' if total !== 1 else 'y' }}</span>
+    <div class="flex items-center gap-2">
+      {% if page > 1 %}
+        <a hx-get="/campaigns/{{ campaign.slug }}/journal/{{ entityType }}/{{ entityId }}?page={{ page - 1 }}"
+           hx-swap="outerHTML" hx-target="closest div[id]"
+           class="px-2 py-1 border border-stone-800 rounded hover:border-stone-600 cursor-pointer">← Prev</a>
+      {% endif %}
+      <span>{{ page }} / {{ totalPages }}</span>
+      {% if page < totalPages %}
+        <a hx-get="/campaigns/{{ campaign.slug }}/journal/{{ entityType }}/{{ entityId }}?page={{ page + 1 }}"
+           hx-swap="outerHTML" hx-target="closest div[id]"
+           class="px-2 py-1 border border-stone-800 rounded hover:border-stone-600 cursor-pointer">Next →</a>
+      {% endif %}
     </div>
   </div>
 {% endif %}
