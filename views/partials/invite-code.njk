@@ -1,0 +1,13 @@
+{# Expects: inviteCode, campaign — used standalone and as HTMX swap target #}
+<div class="flex items-center gap-3">
+  <code class="text-xl font-mono tracking-widest text-stone-100 bg-stone-950 border border-stone-700 rounded px-4 py-2">
+    {{ inviteCode }}
+  </code>
+  <form hx-post="/campaigns/{{ campaign.slug }}/members/invite/rotate"
+        hx-target="#invite-code-block" hx-swap="innerHTML">
+    <button type="submit"
+            class="text-xs text-stone-600 hover:text-stone-400 border border-stone-800 rounded px-3 py-2 transition-colors">
+      Rotate
+    </button>
+  </form>
+</div>

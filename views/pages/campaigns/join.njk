@@ -1,0 +1,27 @@
+{% extends "layouts/base.njk" %}
+{% block content %}
+
+<div class="max-w-sm mx-auto mt-16">
+  <h1 class="text-2xl font-semibold text-stone-100 mb-2 text-center">Join a Campaign</h1>
+  <p class="text-stone-500 text-sm text-center mb-8">Enter the invite code from your GM.</p>
+
+  <form method="POST" action="/campaigns/join" class="space-y-4">
+    <input type="text" name="code" required autofocus
+           maxlength="8"
+           placeholder="A3F7C2B1"
+           class="w-full text-center text-2xl font-mono tracking-widest uppercase
+                  bg-stone-900 border border-stone-700 rounded px-4 py-3 text-stone-100
+                  focus:outline-none focus:border-stone-500 transition-colors
+                  placeholder:text-stone-700" />
+    <button type="submit"
+            class="w-full py-2.5 bg-stone-100 text-stone-900 font-medium rounded hover:bg-white transition-colors">
+      Join
+    </button>
+  </form>
+
+  <p class="text-center mt-6">
+    <a href="/dashboard" class="text-xs text-stone-600 hover:text-stone-400">← Back to dashboard</a>
+  </p>
+</div>
+
+{% endblock %}

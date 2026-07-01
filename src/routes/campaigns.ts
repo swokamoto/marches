@@ -16,9 +16,11 @@ import expeditionsRouter from "./expeditions.js";
 import sessionsRouter from "./sessions.js";
 import charactersRouter from "./characters.js";
 import timelineRouter from "./timeline.js";
+import membersRouter from "./members.js";
 import { getRecentActivity, describeActivity } from "../services/activity.js";
 import { getExpeditions } from "../services/expeditions.js";
 import { getWorldEvents } from "../services/timeline.js";
+import { getCampaignByInviteCode, addMember } from "../services/members.js";
 
 const router = Router();
 
@@ -70,6 +72,34 @@ router.use("/:slug/expeditions", loadCampaign, requireCampaignMember, expedition
 router.use("/:slug/sessions", loadCampaign, requireCampaignMember, sessionsRouter);
 router.use("/:slug/characters", loadCampaign, requireCampaignMember, charactersRouter);
 router.use("/:slug/timeline", loadCampaign, requireCampaignMember, timelineRouter);
+router.use("/:slug/members", loadCampaign, requireCampaignMember, membersRouter);
+
+// ─── Join campaign via invite code ────────────────────────────────────────────
+
+router.get("/join", (_req, res) => {
+  res.render("pages/campaigns/join.njk", { title: "Join a Campaign" });
+});
+
+router.post("/join", async (req, res) => {
+  const { code } = req.body as { code: string };
+
+  if (!code?.trim()) {
+    req.session.flash = { error: "Please enter an invite code." };
+    return res.redirect("/campaigns/join");
+  }
+
+  const campaign = await getCampaignByInviteCode(code.trim());
+
+  if (!campaign) {
+    req.session.flash = { error: "Invalid invite code." };
+    return res.redirect("/campaigns/join");
+  }
+
+  await addMember(campaign.id, req.session.userId!);
+
+  req.session.flash = { success: `You joined ${campaign.name}!` };
+  res.redirect(`/campaigns/${campaign.slug}`);
+});
 
 // ─── Campaign dashboard ───────────────────────────────────────────────────────
 // loadCampaign reads :slug, requireCampaignMember verifies membership.
