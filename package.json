@@ -5,8 +5,9 @@
   "main": "dist/server.js",
   "scripts": {
     "dev": "concurrently \"tsx watch src/server.ts\" \"npx @tailwindcss/cli -i src/styles/app.css -o public/css/app.css --watch\"",
-    "build": "tsc && npx @tailwindcss/cli -i src/styles/app.css -o public/css/app.css --minify",
+    "build": "tsc && npx @tailwindcss/cli -i src/styles/app.css -o public/css/app.css --minify && cp -r src/db/migrations dist/db/migrations",
     "start": "node dist/server.js",
+    "db:migrate:prod": "node dist/db/migrate.js",
     "typecheck": "tsc --noEmit",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
