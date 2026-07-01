@@ -1,5 +1,6 @@
 import "dotenv/config";
 import express from "express";
+import { rateLimit } from "express-rate-limit";
 import { configureTemplates } from "./templates.js";
 import { sessionMiddleware } from "./middleware/session.js";
 import { flashMiddleware, loadUser } from "./middleware/locals.js";
@@ -9,39 +10,73 @@ import campaignsRouter from "./routes/campaigns.js";
 
 const app = express();
 
-// Parse URL-encoded form bodies (used by HTML forms)
+// ─── Rate limiting ────────────────────────────────────────────────────────────
+
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  limit: 20,
+  standardHeaders: "draft-8",
+  legacyHeaders: false,
+  message: "Too many attempts — please try again in 15 minutes.",
+  skip: () => process.env.NODE_ENV === "test",
+});
+
+// ─── Body parsing ─────────────────────────────────────────────────────────────
+
 app.use(express.urlencoded({ extended: true }));
-
-// Parse JSON bodies (used by HTMX requests that send JSON)
 app.use(express.json());
-
-// Serve static files from /public
 app.use(express.static("public"));
 
-// Session — must come before flash and loadUser
-app.use(sessionMiddleware);
+// ─── Session + locals ─────────────────────────────────────────────────────────
 
-// Flash messages + authenticated user on every request
+app.use(sessionMiddleware);
 app.use(flashMiddleware);
 app.use(loadUser);
 
-// Nunjucks template engine
 configureTemplates(app);
 
 // ─── Routes ───────────────────────────────────────────────────────────────────
 
-app.use("/auth", authRouter);
+app.use("/auth", authLimiter, authRouter);
 app.use("/campaigns", campaignsRouter);
 
-// Authenticated users go to dashboard; guests see the landing page
 app.get("/", (req, res) => {
   if (req.session.userId) return res.redirect("/dashboard");
   res.render("pages/home.njk", { title: "Welcome" });
 });
 
-// Dashboard — protected, stub until Phase 4
 app.get("/dashboard", requireAuth, (req, res) => {
   res.render("pages/dashboard.njk", { title: "Dashboard" });
 });
+
+// ─── 404 ──────────────────────────────────────────────────────────────────────
+
+app.use((_req, res) => {
+  res.status(404).render("pages/error.njk", {
+    status: "404",
+    message: "Page not found.",
+  });
+});
+
+// ─── 500 ──────────────────────────────────────────────────────────────────────
+// Express 5 catches async errors automatically — this handles them.
+
+app.use(
+  (
+    err: Error,
+    _req: express.Request,
+    res: express.Response,
+    _next: express.NextFunction
+  ) => {
+    console.error(err);
+    res.status(500).render("pages/error.njk", {
+      status: "500",
+      message:
+        process.env.NODE_ENV === "production"
+          ? "Something went wrong. Please try again."
+          : err.message,
+    });
+  }
+);
 
 export default app;
