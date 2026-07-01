@@ -13,6 +13,7 @@ import npcsRouter from "./npcs.js";
 import artifactsRouter from "./artifacts.js";
 import journalRouter from "./journal.js";
 import expeditionsRouter from "./expeditions.js";
+import sessionsRouter from "./sessions.js";
 
 const router = Router();
 
@@ -61,6 +62,7 @@ router.use("/:slug/npcs", loadCampaign, requireCampaignMember, npcsRouter);
 router.use("/:slug/artifacts", loadCampaign, requireCampaignMember, artifactsRouter);
 router.use("/:slug/journal", loadCampaign, requireCampaignMember, journalRouter);
 router.use("/:slug/expeditions", loadCampaign, requireCampaignMember, expeditionsRouter);
+router.use("/:slug/sessions", loadCampaign, requireCampaignMember, sessionsRouter);
 
 // ─── Campaign dashboard ───────────────────────────────────────────────────────
 // loadCampaign reads :slug, requireCampaignMember verifies membership.

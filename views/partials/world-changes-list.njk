@@ -1,0 +1,78 @@
+{# Expects: session (with report.worldChanges loaded), report #}
+{# HTMX swap target: #world-changes-section #}
+
+{% set theReport = report if report else session.report %}
+
+{% if theReport %}
+  {% if theReport.worldChanges.length === 0 %}
+    <p class="text-stone-600 text-sm mb-4">No world changes proposed yet.</p>
+  {% else %}
+    <div class="space-y-3 mb-4">
+      {% for change in theReport.worldChanges %}
+        <div class="flex items-start justify-between bg-stone-900 border border-stone-800 rounded p-3">
+          <div>
+            <span class="text-xs text-stone-500 capitalize">{{ change.changeType | replace("_", " ") }}</span>
+            <p class="text-sm text-stone-300 mt-0.5">{{ change.description }}</p>
+          </div>
+          {% if change.status === 'pending' %}
+            <form hx-post="/campaigns/{{ campaign.slug }}/sessions/{{ session.id }}/world-changes/{{ change.id }}/remove"
+                  hx-target="#world-changes-section" hx-swap="innerHTML" class="ml-3 shrink-0">
+              <button type="submit" class="text-stone-700 hover:text-red-500 text-xs">✕</button>
+            </form>
+          {% else %}
+            <span class="text-xs text-green-700 ml-3 shrink-0">published</span>
+          {% endif %}
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+
+  {# Add world change form #}
+  {% if theReport.status === 'draft' %}
+    <details class="group">
+      <summary class="text-sm text-stone-400 cursor-pointer hover:text-stone-200 list-none">
+        + Propose a world change
+      </summary>
+      <form hx-post="/campaigns/{{ campaign.slug }}/sessions/{{ session.id }}/world-changes/add"
+            hx-target="#world-changes-section" hx-swap="innerHTML"
+            class="mt-3 space-y-3 bg-stone-900 border border-stone-800 rounded p-4">
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs text-stone-500 mb-1">Type</label>
+            <select name="change_type" id="change_type_select"
+                    hx-get="/campaigns/{{ campaign.slug }}/sessions/{{ session.id }}/world-change-fields"
+                    hx-target="#change-type-fields"
+                    hx-trigger="change"
+                    class="w-full bg-stone-950 border border-stone-700 rounded px-2 py-1.5 text-sm text-stone-300 focus:outline-none focus:border-stone-500">
+              <option value="custom">Custom</option>
+              <option value="location_status_change">Location Status Change</option>
+              <option value="npc_defeated">NPC Defeated</option>
+              <option value="npc_status_change">NPC Status Change</option>
+              <option value="discovery">Discovery</option>
+              <option value="structure_built">Structure Built</option>
+              <option value="structure_destroyed">Structure Destroyed</option>
+              <option value="route_opened">Route Opened</option>
+              <option value="route_closed">Route Closed</option>
+              <option value="faction_event">Faction Event</option>
+            </select>
+          </div>
+        </div>
+
+        <div id="change-type-fields"></div>
+
+        <div>
+          <label class="block text-xs text-stone-500 mb-1">Description</label>
+          <textarea name="description" rows="2" required
+                    placeholder="What happened?"
+                    class="w-full bg-stone-950 border border-stone-700 rounded px-2 py-1.5 text-sm text-stone-300 focus:outline-none focus:border-stone-500 resize-none"></textarea>
+        </div>
+
+        <button type="submit"
+                class="px-4 py-1.5 text-sm bg-stone-800 text-stone-300 rounded hover:bg-stone-700 transition-colors">
+          Add change
+        </button>
+      </form>
+    </details>
+  {% endif %}
+{% endif %}

@@ -1,0 +1,140 @@
+{% extends "layouts/base.njk" %}
+{% block content %}
+
+<div class="flex items-start justify-between mb-6">
+  <div>
+    <h1 class="text-xl font-semibold text-stone-100 mb-1">
+      Session — {{ session.expedition.title }}
+    </h1>
+    <p class="text-stone-500 text-sm">
+      GM: {{ session.gm.displayName }}
+      {% if session.campaignDay %} · Day {{ session.campaignDay }}{% endif %}
+      · <span class="capitalize">{{ session.status | replace("_", " ") }}</span>
+    </p>
+  </div>
+  <a href="/campaigns/{{ campaign.slug }}/expeditions/{{ session.expedition.id }}"
+     class="text-xs text-stone-600 hover:text-stone-400">← Expedition</a>
+</div>
+
+{# ── Participants ── #}
+<div class="mb-8">
+  <h2 class="text-xs font-semibold text-stone-500 uppercase tracking-widest mb-2">Participants</h2>
+  <div class="flex flex-wrap gap-2">
+    {% for p in session.participants %}
+      <span class="text-sm text-stone-400 bg-stone-900 border border-stone-800 rounded px-3 py-1">
+        {{ p.character.name }}
+        <span class="text-stone-600 text-xs ml-1">({{ p.character.player.displayName }})</span>
+      </span>
+    {% endfor %}
+  </div>
+</div>
+
+{# ── Session journal entry (narrative) ── #}
+<div class="mb-8">
+  <h2 class="text-xs font-semibold text-stone-500 uppercase tracking-widest mb-3">Session Record</h2>
+  <div
+    hx-get="/campaigns/{{ campaign.slug }}/journal/session/{{ session.id }}"
+    hx-trigger="load"
+    hx-swap="outerHTML"
+  >
+    <p class="text-stone-600 text-sm">Loading...</p>
+  </div>
+</div>
+
+{# ── World changes (GM only) ── #}
+{% if isGm %}
+  <div class="mb-8 border-t border-stone-800 pt-8">
+    <div class="flex items-center justify-between mb-4">
+      <h2 class="text-xs font-semibold text-stone-500 uppercase tracking-widest">World Changes</h2>
+      {% if session.report and session.report.status === 'published' %}
+        <span class="text-xs text-green-600 border border-green-900 rounded px-2 py-0.5">Published</span>
+      {% endif %}
+    </div>
+
+    {% if not session.report %}
+      <form method="POST" action="/campaigns/{{ campaign.slug }}/sessions/{{ session.id }}/report/open">
+        <button type="submit"
+                class="px-4 py-2 text-sm border border-stone-700 text-stone-400 rounded hover:border-stone-500 transition-colors">
+          Open report to add world changes
+        </button>
+      </form>
+    {% else %}
+      <div id="world-changes-section">
+        {% include "partials/world-changes-list.njk" %}
+      </div>
+
+      {% if session.report.status === 'draft' %}
+        <div class="mt-4">
+          <a href="/campaigns/{{ campaign.slug }}/sessions/{{ session.id }}/publish"
+             class="inline-block px-5 py-2 bg-stone-100 text-stone-900 text-sm font-medium rounded hover:bg-white transition-colors">
+            Review &amp; Publish →
+          </a>
+        </div>
+      {% endif %}
+    {% endif %}
+  </div>
+{% endif %}
+
+{# ── Player notes section ── #}
+{% if session.report and session.report.status === 'published' %}
+  <div class="border-t border-stone-800 pt-8">
+    <h2 class="text-xs font-semibold text-stone-500 uppercase tracking-widest mb-4">Player Notes</h2>
+
+    {% if isGm %}
+      {# GMs see all submitted notes #}
+      {% if session.playerNotes.length === 0 %}
+        <p class="text-stone-600 text-sm">No notes submitted yet.</p>
+      {% else %}
+        <div class="space-y-4">
+          {% for note in session.playerNotes %}
+            <div class="border-l-2 border-stone-800 pl-4">
+              <p class="text-xs text-stone-500 mb-1">{{ note.player.displayName }}</p>
+              <p class="text-stone-300 text-sm whitespace-pre-wrap">{{ note.body }}</p>
+            </div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endif %}
+
+    {# Players see their own note or the submit form #}
+    {% if isParticipant and session.status !== 'closed' %}
+      {% if myNote %}
+        <div class="mt-4 border-l-2 border-stone-700 pl-4">
+          <p class="text-xs text-stone-500 mb-1">Your note</p>
+          <p class="text-stone-300 text-sm whitespace-pre-wrap">{{ myNote.body }}</p>
+        </div>
+      {% else %}
+        <form method="POST" action="/campaigns/{{ campaign.slug }}/sessions/{{ session.id }}/notes"
+              class="space-y-3 mt-4 max-w-lg">
+          <p class="text-stone-400 text-sm italic">
+            What was most interesting, surprising, or unresolved for your character this session?
+          </p>
+          {% if myParticipant %}
+            <input type="hidden" name="character_id" value="{{ myParticipant.character.id }}" />
+          {% endif %}
+          <textarea name="body" rows="4" required
+                    class="w-full bg-stone-900 border border-stone-700 rounded px-3 py-2 text-sm text-stone-100
+                           focus:outline-none focus:border-stone-500 transition-colors resize-none"></textarea>
+          <button type="submit"
+                  class="px-4 py-2 bg-stone-100 text-stone-900 text-sm font-medium rounded hover:bg-white transition-colors">
+            Submit note
+          </button>
+        </form>
+      {% endif %}
+    {% endif %}
+
+    {# GM close button if awaiting notes #}
+    {% if isGm and session.status === 'awaiting_notes' %}
+      <form method="POST" action="/campaigns/{{ campaign.slug }}/sessions/{{ session.id }}/close"
+            class="mt-6">
+        <button type="submit"
+                onclick="return confirm('Close session manually? Not all players have submitted notes.')"
+                class="px-4 py-2 text-sm border border-stone-700 text-stone-400 rounded hover:border-stone-500 transition-colors">
+          Close session
+        </button>
+      </form>
+    {% endif %}
+  </div>
+{% endif %}
+
+{% endblock %}

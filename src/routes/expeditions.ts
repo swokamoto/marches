@@ -19,6 +19,7 @@ import { getLocations } from "../services/locations.js";
 import { getNpcs } from "../services/npcs.js";
 import { getArtifacts } from "../services/artifacts.js";
 import { detectConflicts } from "../services/conflicts.js";
+import { createSession } from "../services/sessions.js";
 
 const router = Router({ mergeParams: true });
 
@@ -256,5 +257,26 @@ router.post("/:expeditionId/leave", async (req, res) => {
     playerCharacters: characters,
   });
 });
+
+// ─── Start session ────────────────────────────────────────────────────────────
+
+router.post(
+  "/:expeditionId/sessions/create",
+  requireCampaignRole("gm", "admin"),
+  async (req, res) => {
+    const { campaign_day } = req.body as { campaign_day?: string };
+
+    const session = await createSession({
+      expeditionId: req.params.expeditionId as string,
+      gmId: req.session.userId!,
+      campaignId: res.locals.campaign.id,
+      campaignDay: campaign_day ? parseInt(campaign_day) : undefined,
+      playedAt: new Date(),
+    });
+
+    req.session.flash = { success: "Session started." };
+    res.redirect(`/campaigns/${res.locals.campaign.slug}/sessions/${session.id}`);
+  }
+);
 
 export default router;

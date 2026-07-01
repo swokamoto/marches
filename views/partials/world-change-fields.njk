@@ -1,0 +1,56 @@
+{# Rendered by HTMX when the change type dropdown changes #}
+{# Expects: changeType, campaignLocations, campaignNpcs #}
+
+{% if changeType === 'location_status_change' %}
+  <div class="grid grid-cols-2 gap-3">
+    <div>
+      <label class="block text-xs text-stone-500 mb-1">Location</label>
+      <select name="entity_id" required
+              class="w-full bg-stone-950 border border-stone-700 rounded px-2 py-1.5 text-sm text-stone-300 focus:outline-none focus:border-stone-500">
+        <option value="">— Select —</option>
+        {% for loc in campaignLocations %}
+          <option value="{{ loc.id }}">{{ loc.name }}</option>
+        {% endfor %}
+      </select>
+      <input type="hidden" name="entity_type" value="location" />
+    </div>
+    <div>
+      <label class="block text-xs text-stone-500 mb-1">New status</label>
+      <select name="new_status" required
+              class="w-full bg-stone-950 border border-stone-700 rounded px-2 py-1.5 text-sm text-stone-300 focus:outline-none focus:border-stone-500">
+        <option value="open">Open</option>
+        <option value="active">Active</option>
+        <option value="ruined">Ruined</option>
+        <option value="destroyed">Destroyed</option>
+        <option value="unknown">Unknown</option>
+      </select>
+    </div>
+  </div>
+
+{% elif changeType === 'npc_defeated' or changeType === 'npc_status_change' %}
+  <div class="grid grid-cols-2 gap-3">
+    <div>
+      <label class="block text-xs text-stone-500 mb-1">NPC</label>
+      <select name="entity_id" required
+              class="w-full bg-stone-950 border border-stone-700 rounded px-2 py-1.5 text-sm text-stone-300 focus:outline-none focus:border-stone-500">
+        <option value="">— Select —</option>
+        {% for npc in campaignNpcs %}
+          <option value="{{ npc.id }}">{{ npc.name }}</option>
+        {% endfor %}
+      </select>
+      <input type="hidden" name="entity_type" value="npc" />
+    </div>
+    {% if changeType === 'npc_status_change' %}
+      <div>
+        <label class="block text-xs text-stone-500 mb-1">New status</label>
+        <select name="new_status"
+                class="w-full bg-stone-950 border border-stone-700 rounded px-2 py-1.5 text-sm text-stone-300 focus:outline-none focus:border-stone-500">
+          <option value="alive">Alive</option>
+          <option value="dead">Dead</option>
+          <option value="missing">Missing</option>
+          <option value="unknown">Unknown</option>
+        </select>
+      </div>
+    {% endif %}
+  </div>
+{% endif %}
