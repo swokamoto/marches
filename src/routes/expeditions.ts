@@ -20,6 +20,7 @@ import { getNpcs } from "../services/npcs.js";
 import { getArtifacts } from "../services/artifacts.js";
 import { detectConflicts } from "../services/conflicts.js";
 import { createSession } from "../services/sessions.js";
+import { logActivity } from "../services/activity.js";
 
 const router = Router({ mergeParams: true });
 
@@ -67,6 +68,16 @@ router.post("/new", requireCampaignRole("gm", "admin"), async (req, res) => {
 
   req.session.flash = { success: `Expedition "${expedition.title}" created.` };
   res.redirect(`/campaigns/${res.locals.campaign.slug}/expeditions/${expedition.id}`);
+
+  // fire-and-forget — don't block the redirect
+  void logActivity({
+    campaignId: res.locals.campaign.id,
+    actorId: req.session.userId!,
+    actionType: "expedition.created",
+    entityType: "expedition",
+    entityId: expedition.id,
+    metadata: { title: expedition.title },
+  });
 });
 
 // ─── Detail ───────────────────────────────────────────────────────────────────
@@ -122,6 +133,15 @@ router.post(
     }
 
     const updated = await updateExpeditionStatus(expedition.id, next as Parameters<typeof updateExpeditionStatus>[1]);
+
+    void logActivity({
+      campaignId: res.locals.campaign.id,
+      actorId: req.session.userId!,
+      actionType: "expedition.status_changed",
+      entityType: "expedition",
+      entityId: expedition.id,
+      metadata: { title: expedition.title, status: next },
+    });
 
     if (req.headers["hx-request"]) {
       return res.render("partials/expedition-status-zone.njk", {
@@ -258,20 +278,33 @@ router.post("/:expeditionId/leave", async (req, res) => {
   });
 });
 
-// ─── Start session ────────────────────────────────────────────────────────────
-
-router.post(
+  router.post(
   "/:expeditionId/sessions/create",
   requireCampaignRole("gm", "admin"),
   async (req, res) => {
+    const expeditionId = req.params.expeditionId as string;
     const { campaign_day } = req.body as { campaign_day?: string };
 
+    const expedition = await getExpeditionById(expeditionId);
+    if (!expedition || expedition.campaignId !== res.locals.campaign.id) {
+      return res.status(404).render("pages/error.njk", { message: "Expedition not found." });
+    }
+
     const session = await createSession({
-      expeditionId: req.params.expeditionId as string,
+      expeditionId,
       gmId: req.session.userId!,
       campaignId: res.locals.campaign.id,
       campaignDay: campaign_day ? parseInt(campaign_day) : undefined,
       playedAt: new Date(),
+    });
+
+    void logActivity({
+      campaignId: res.locals.campaign.id,
+      actorId: req.session.userId!,
+      actionType: "session.created",
+      entityType: "session",
+      entityId: session.id,
+      metadata: { expeditionTitle: expedition.title },
     });
 
     req.session.flash = { success: "Session started." };

@@ -15,6 +15,10 @@ import journalRouter from "./journal.js";
 import expeditionsRouter from "./expeditions.js";
 import sessionsRouter from "./sessions.js";
 import charactersRouter from "./characters.js";
+import timelineRouter from "./timeline.js";
+import { getRecentActivity, describeActivity } from "../services/activity.js";
+import { getExpeditions } from "../services/expeditions.js";
+import { getWorldEvents } from "../services/timeline.js";
 
 const router = Router();
 
@@ -65,6 +69,7 @@ router.use("/:slug/journal", loadCampaign, requireCampaignMember, journalRouter)
 router.use("/:slug/expeditions", loadCampaign, requireCampaignMember, expeditionsRouter);
 router.use("/:slug/sessions", loadCampaign, requireCampaignMember, sessionsRouter);
 router.use("/:slug/characters", loadCampaign, requireCampaignMember, charactersRouter);
+router.use("/:slug/timeline", loadCampaign, requireCampaignMember, timelineRouter);
 
 // ─── Campaign dashboard ───────────────────────────────────────────────────────
 // loadCampaign reads :slug, requireCampaignMember verifies membership.
@@ -74,9 +79,20 @@ router.get(
   "/:slug",
   loadCampaign,
   requireCampaignMember,
-  (_req, res) => {
+  async (_req, res) => {
+    const [expeditionList, recentEvents] = await Promise.all([
+      getExpeditions(res.locals.campaign.id),
+      getWorldEvents(res.locals.campaign.id),
+    ]);
+
+    const activeExpeditions = expeditionList.filter(
+      (e) => ["recruiting", "scheduled", "active"].includes(e.status)
+    );
+
     res.render("pages/campaigns/show.njk", {
       title: res.locals.campaign.name,
+      activeExpeditions,
+      recentEvents: recentEvents.slice(0, 5),
     });
   }
 );
@@ -87,9 +103,13 @@ router.get(
   "/:slug/activity",
   loadCampaign,
   requireCampaignMember,
-  (_req, res) => {
-    // Stub — real activity log query added in Phase 8
-    res.render("partials/activity-feed.njk", { activities: [] });
+  async (_req, res) => {
+    const raw = await getRecentActivity(res.locals.campaign.id);
+    const activities = raw.map((item) => ({
+      ...item,
+      description: describeActivity(item),
+    }));
+    res.render("partials/activity-feed.njk", { activities });
   }
 );
 

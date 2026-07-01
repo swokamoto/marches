@@ -16,6 +16,7 @@ import {
 import type { WorldChangeType } from "../services/world-changes.js";
 import { getLocations } from "../services/locations.js";
 import { getNpcs } from "../services/npcs.js";
+import { logActivity } from "../services/activity.js";
 
 const router = Router({ mergeParams: true });
 
@@ -239,6 +240,15 @@ router.post(
     // Advance session to awaiting player notes
     await updateSessionStatus(session.id, "awaiting_notes");
 
+    void logActivity({
+      campaignId: session.campaignId,
+      actorId: req.session.userId!,
+      actionType: "session.report_published",
+      entityType: "session",
+      entityId: session.id,
+      metadata: { expeditionTitle: session.expedition.title },
+    });
+
     req.session.flash = {
       success: `Report published. ${session.report.worldChanges.filter(c => c.status === "pending").length} world event(s) created.`,
     };
@@ -321,6 +331,16 @@ router.post(
     }
 
     await updateSessionStatus(session.id, "closed");
+
+    void logActivity({
+      campaignId: session.campaignId,
+      actorId: req.session.userId!,
+      actionType: "session.closed",
+      entityType: "session",
+      entityId: session.id,
+      metadata: { expeditionTitle: session.expedition.title },
+    });
+
     req.session.flash = { success: "Session closed." };
     res.redirect(`/campaigns/${res.locals.campaign.slug}/sessions/${session.id}`);
   }

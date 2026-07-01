@@ -22,39 +22,50 @@
 </div>
 
 {# ── Three-column overview ── #}
-<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
 
-  {# Upcoming expeditions #}
+  {# Active / upcoming expeditions #}
   <div class="bg-stone-900 border border-stone-800 rounded p-5">
-    <h2 class="text-sm font-medium text-stone-400 uppercase tracking-wide mb-4">
-      Upcoming Expeditions
-    </h2>
-    <div class="text-stone-600 text-sm text-center py-6">
-      No expeditions scheduled.
+    <div class="flex items-center justify-between mb-4">
+      <h2 class="text-sm font-medium text-stone-400 uppercase tracking-wide">Active Expeditions</h2>
+      <a href="/campaigns/{{ campaign.slug }}/expeditions" class="text-xs text-stone-600 hover:text-stone-400">All →</a>
     </div>
+    {% if activeExpeditions.length === 0 %}
+      <p class="text-stone-600 text-sm text-center py-4">No active expeditions.</p>
+    {% else %}
+      <div class="space-y-2">
+        {% for exp in activeExpeditions %}
+          <a href="/campaigns/{{ campaign.slug }}/expeditions/{{ exp.id }}"
+             class="flex items-center justify-between text-sm py-1.5 border-b border-stone-800 last:border-0 hover:text-stone-100 transition-colors">
+            <span class="text-stone-300">{{ exp.title }}</span>
+            <span class="text-xs text-stone-600 capitalize">{{ exp.status }}</span>
+          </a>
+        {% endfor %}
+      </div>
+    {% endif %}
   </div>
 
   {# Recent world events #}
   <div class="bg-stone-900 border border-stone-800 rounded p-5">
-    <h2 class="text-sm font-medium text-stone-400 uppercase tracking-wide mb-4">
-      World Events
-    </h2>
-    <div class="text-stone-600 text-sm text-center py-6">
-      No events recorded yet.
+    <div class="flex items-center justify-between mb-4">
+      <h2 class="text-sm font-medium text-stone-400 uppercase tracking-wide">Recent Events</h2>
+      <a href="/campaigns/{{ campaign.slug }}/timeline" class="text-xs text-stone-600 hover:text-stone-400">Timeline →</a>
     </div>
-  </div>
-
-  {# Conflict warnings (GM/admin only) #}
-  {% if member.role in ['admin', 'gm'] %}
-    <div class="bg-stone-900 border border-stone-800 rounded p-5">
-      <h2 class="text-sm font-medium text-stone-400 uppercase tracking-wide mb-4">
-        Scheduling Conflicts
-      </h2>
-      <div class="text-stone-600 text-sm text-center py-6">
-        No conflicts detected.
+    {% if recentEvents.length === 0 %}
+      <p class="text-stone-600 text-sm text-center py-4">No world events yet.</p>
+    {% else %}
+      <div class="space-y-2">
+        {% for event in recentEvents %}
+          <div class="text-sm py-1.5 border-b border-stone-800 last:border-0">
+            <span class="text-stone-300">{{ event.title }}</span>
+            {% if event.campaignDay %}
+              <span class="text-xs text-stone-600 ml-2">Day {{ event.campaignDay }}</span>
+            {% endif %}
+          </div>
+        {% endfor %}
       </div>
-    </div>
-  {% endif %}
+    {% endif %}
+  </div>
 
 </div>
 

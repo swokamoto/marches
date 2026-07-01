@@ -681,6 +681,32 @@ export const sessionPlayerNotesRelations = relations(
   })
 );
 
+export const worldEventsRelations = relations(worldEvents, ({ one }) => ({
+  campaign: one(campaigns, {
+    fields: [worldEvents.campaignId],
+    references: [campaigns.id],
+  }),
+  session: one(sessions, {
+    fields: [worldEvents.sessionId],
+    references: [sessions.id],
+  }),
+  createdBy: one(users, {
+    fields: [worldEvents.createdBy],
+    references: [users.id],
+  }),
+}));
+
+export const activityLogRelations = relations(activityLog, ({ one }) => ({
+  campaign: one(campaigns, {
+    fields: [activityLog.campaignId],
+    references: [campaigns.id],
+  }),
+  actor: one(users, {
+    fields: [activityLog.actorId],
+    references: [users.id],
+  }),
+}));
+
 export const worldChangesRelations = relations(worldChanges, ({ one }) => ({
   sessionReport: one(sessionReports, {
     fields: [worldChanges.sessionReportId],
