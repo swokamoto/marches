@@ -1,0 +1,113 @@
+# Marches
+
+A web app for running **West Marches** tabletop RPG campaigns — the kind where a large group of friends share one living world, play in different combinations, and every session leaves a permanent mark on the map.
+
+Built as a full-stack portfolio project using Node.js, TypeScript, PostgreSQL, and server-rendered HTML.
+
+---
+
+## Background
+
+West Marches is a format where a big group (10–20+ people) all share one campaign world. There's no fixed group and no set schedule — players organise their own sessions, pick who's coming, and head out into the wilderness. When they come back, whatever happened in their session is now part of the world: the monster is dead, the dungeon is looted, the village burned down.
+
+Keeping track of all that across multiple game masters and dozens of players, using just a shared Google Doc, gets messy fast. Marches is a purpose-built tool to manage it properly.
+
+---
+
+## What it does
+
+**Campaigns** — Create a campaign, share an invite code, and everyone who joins gets the right level of access based on their role (admin, GM, or player).
+
+**The world map** — GMs track locations, how they connect, and what state they're in. A forest clearing might start as "unexplored", become "active" once players find it, and end up "ruined" after a battle. Locations can be nested (the dungeon is inside the forest, the throne room is inside the dungeon).
+
+**NPCs and artifacts** — Key characters and objects have their own pages, tracking their current status and where they were last seen.
+
+**Expeditions** — Before a session, a GM proposes an expedition: where they're going, who's invited, what they're after. The app checks for conflicts — if two GMs are both planning to visit the same location or interact with the same NPC, everyone gets a warning before anyone commits.
+
+**Sessions and reports** — After playing, the GM writes up what happened as a structured report. World changes (new discoveries, NPCs killed, routes opened) get logged and feed into the timeline. Players can add their own private notes.
+
+**Journal** — Anyone can write journal entries attached to any location, NPC, artifact, character, or session. Public entries are visible to the whole campaign; private ones are just for you.
+
+**Timeline** — A chronological view of everything that has happened in the campaign world, ordered by in-game date.
+
+---
+
+## Tech stack
+
+| | |
+|---|---|
+| **Language** | TypeScript (strict mode) |
+| **Backend** | Node.js 22, Express 5 |
+| **Database** | PostgreSQL 16, Drizzle ORM |
+| **Frontend** | Server-rendered HTML (Nunjucks templates), Tailwind CSS v4, HTMX |
+| **Auth** | Session-based login with bcrypt password hashing |
+| **Deployment** | Docker, Fly.io |
+
+There's no React or other frontend framework. Pages are rendered on the server and sent as HTML. HTMX handles the small interactive bits — loading journal entries inline, swapping status badges without a full page reload — without needing a separate API layer.
+
+---
+
+## Project structure
+
+```
+src/
+├── routes/      # One file per resource (campaigns, locations, npcs, sessions…)
+├── services/    # All database queries and business logic
+├── middleware/  # Auth guards, campaign loading, flash messages
+└── db/          # Schema (22 tables), migrations, Drizzle client
+
+views/
+├── layouts/     # Base HTML shell shared by all pages
+├── pages/       # One template per page
+└── partials/    # Reusable components (status badges, journal list, etc.)
+```
+
+---
+
+## Running locally
+
+You'll need Docker and Node.js 22.
+
+```bash
+git clone https://github.com/swokamoto/marches
+cd marches
+npm install
+
+# Start the database
+docker compose up -d
+
+# Set up environment variables
+cp .env.example .env
+# Open .env and set SESSION_SECRET to any long random string
+
+# Apply the database schema
+npx drizzle-kit migrate
+
+# Start the dev server
+npm run dev
+```
+
+The app will be running at `http://localhost:3000`.
+
+---
+
+## Deployment
+
+Configured for [Fly.io](https://fly.io) with a managed Postgres database.
+
+```bash
+fly auth login
+fly launch --no-deploy
+fly postgres create
+fly postgres attach <pg-app-name>
+fly secrets set SESSION_SECRET="$(openssl rand -hex 32)"
+fly deploy
+```
+
+The Docker build compiles TypeScript, bundles CSS, and produces a lean production image. Database migrations run automatically when the container starts.
+
+---
+
+## License
+
+MIT
