@@ -1,6 +1,6 @@
 import { db } from "../db/index.js";
-import { locations } from "../db/schema.js";
-import { eq, and, isNull } from "drizzle-orm";
+import { locations, locationConnections } from "../db/schema.js";
+import { eq, and, isNull, ilike } from "drizzle-orm";
 import type { InferSelectModel } from "drizzle-orm";
 
 export type Location = InferSelectModel<typeof locations>;
@@ -22,7 +22,7 @@ async function uniqueLocationSlug(
   campaignId: string,
   base: string
 ): Promise<string> {
-  let slug = base;
+  let slug = base || "untitled";
   let i = 2;
   while (true) {
     const existing = await db.query.locations.findFirst({
@@ -52,6 +52,16 @@ export async function getLocationBySlug(campaignId: string, slug: string) {
       eq(locations.campaignId, campaignId),
       eq(locations.slug, slug)
     ),
+    with: {
+      parent: { columns: { id: true, name: true, slug: true } },
+      children: {
+        where: isNull(locations.archivedAt),
+        columns: { id: true, name: true, slug: true, status: true },
+      },
+      connectionsFrom: {
+        with: { toLocation: { columns: { id: true, name: true, slug: true, status: true } } },
+      },
+    },
   });
 }
 
@@ -61,14 +71,16 @@ export async function getLocationById(id: string) {
   });
 }
 
-// Search by name prefix — used for check-or-create autocomplete
 export async function searchLocations(campaignId: string, query: string) {
-  const all = await db.query.locations.findMany({
-    where: eq(locations.campaignId, campaignId),
+  return db.query.locations.findMany({
+    where: and(
+      eq(locations.campaignId, campaignId),
+      isNull(locations.archivedAt),
+      ilike(locations.name, `%${query}%`)
+    ),
     columns: { id: true, name: true, slug: true, status: true },
+    limit: 10,
   });
-  const q = query.toLowerCase();
-  return all.filter((l) => l.name.toLowerCase().includes(q)).slice(0, 10);
 }
 
 // ─── Mutations ────────────────────────────────────────────────────────────────
@@ -76,16 +88,46 @@ export async function searchLocations(campaignId: string, query: string) {
 export async function createLocation(
   campaignId: string,
   name: string,
-  createdBy: string
+  createdBy: string,
+  parentLocationId?: string
 ) {
   const slug = await uniqueLocationSlug(campaignId, slugify(name));
 
   const [location] = await db
     .insert(locations)
-    .values({ campaignId, name: name.trim(), slug, createdBy })
+    .values({ campaignId, name: name.trim(), slug, createdBy, parentLocationId: parentLocationId || null })
     .returning();
 
   return location;
+}
+
+export async function updateLocationParent(
+  locationId: string,
+  parentLocationId: string | null
+) {
+  const [updated] = await db
+    .update(locations)
+    .set({ parentLocationId, updatedAt: new Date() })
+    .where(eq(locations.id, locationId))
+    .returning();
+  return updated;
+}
+
+export async function addLocationConnection(
+  fromLocationId: string,
+  toLocationId: string,
+  description?: string
+) {
+  await db
+    .insert(locationConnections)
+    .values({ fromLocationId, toLocationId, description: description?.trim() || null })
+    .onConflictDoNothing();
+}
+
+export async function removeLocationConnection(connectionId: string) {
+  await db
+    .delete(locationConnections)
+    .where(eq(locationConnections.id, connectionId));
 }
 
 export async function updateLocationStatus(

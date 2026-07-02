@@ -1,15 +1,19 @@
 import { Router } from "express";
 import { requireCampaignRole } from "../middleware/campaign.js";
-import { getNpcs, getNpcById, createNpc, updateNpcStatus, searchNpcs, updateNpcLocation, getNpcsWithLocation, archiveNpc } from "../services/npcs.js";
+import { getNpcsPaginated, getNpcById, createNpc, updateNpc, updateNpcStatus, searchNpcs, updateNpcLocation, getNpcsWithLocation, archiveNpc } from "../services/npcs.js";
 import { getLocations } from "../services/locations.js";
 
 const router = Router({ mergeParams: true });
 
-router.get("/", async (_req, res) => {
-  const npcList = await getNpcsWithLocation(res.locals.campaign.id);
+router.get("/", async (req, res) => {
+  const page = Math.max(1, parseInt(String(req.query.page ?? "1")));
+  const { npcs: npcList, total, totalPages } = await getNpcsPaginated(res.locals.campaign.id, page);
   res.render("pages/npcs/index.njk", {
     title: `NPCs — ${res.locals.campaign.name}`,
     npcList,
+    page,
+    total,
+    totalPages,
   });
 });
 
@@ -18,12 +22,12 @@ router.get("/new", requireCampaignRole("gm", "admin"), (_req, res) => {
 });
 
 router.post("/new", requireCampaignRole("gm", "admin"), async (req, res) => {
-  const { name } = req.body as { name: string };
+  const { name, description } = req.body as { name: string; description?: string };
   if (!name?.trim()) {
     req.session.flash = { error: "NPC name is required." };
     return res.redirect(`/campaigns/${res.locals.campaign.slug}/npcs/new`);
   }
-  const npc = await createNpc(res.locals.campaign.id, name, req.session.userId!);
+  const npc = await createNpc(res.locals.campaign.id, name, req.session.userId!, description);
   req.session.flash = { success: `NPC "${npc.name}" created.` };
   res.redirect(`/campaigns/${res.locals.campaign.slug}/npcs/${npc.id}`);
 });
@@ -49,6 +53,22 @@ router.get("/:npcId", async (req, res) => {
     isGm,
   });
 });
+
+router.post(
+  "/:npcId/description",
+  requireCampaignRole("gm", "admin"),
+  async (req, res) => {
+    const npcId = Array.isArray(req.params.npcId) ? req.params.npcId[0] : req.params.npcId;
+    const npc = await getNpcById(npcId);
+    if (!npc || npc.campaignId !== res.locals.campaign.id) {
+      return res.status(404).render("pages/error.njk", { status: "404", message: "NPC not found." });
+    }
+    const { description } = req.body as { description?: string };
+    await updateNpc(npc.id, { description });
+    req.session.flash = { success: "Description updated." };
+    res.redirect(`/campaigns/${res.locals.campaign.slug}/npcs/${npc.id}`);
+  }
+);
 
 router.post(
   "/:npcId/status",

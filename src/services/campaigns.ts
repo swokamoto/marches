@@ -15,7 +15,7 @@ function slugify(name: string): string {
 }
 
 async function uniqueSlug(base: string): Promise<string> {
-  let slug = base;
+  let slug = base || "untitled";
   let i = 2;
   while (true) {
     const existing = await db.query.campaigns.findFirst({

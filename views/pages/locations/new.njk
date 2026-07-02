@@ -22,6 +22,22 @@
       />
     </div>
 
+    {% if allLocations.length > 0 %}
+      <div>
+        <label for="parent_location_id" class="block text-sm text-stone-400 mb-1">
+          Part of <span class="text-stone-600">(optional)</span>
+        </label>
+        <select id="parent_location_id" name="parent_location_id"
+                class="w-full bg-stone-900 border border-stone-700 rounded px-3 py-2 text-stone-300
+                       focus:outline-none focus:border-stone-500 transition-colors">
+          <option value="">— None —</option>
+          {% for loc in allLocations %}
+            <option value="{{ loc.id }}">{{ loc.name }}</option>
+          {% endfor %}
+        </select>
+      </div>
+    {% endif %}
+
     <div class="flex gap-3 pt-2">
       <button
         type="submit"

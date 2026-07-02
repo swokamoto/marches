@@ -1,10 +1,12 @@
 import { db } from "../db/index.js";
 import { characters } from "../db/schema.js";
-import { eq, and, isNull } from "drizzle-orm";
+import { eq, and, isNull, count } from "drizzle-orm";
 import type { InferSelectModel } from "drizzle-orm";
 
 export type Character = InferSelectModel<typeof characters>;
 export type CharacterStatus = Character["status"];
+
+export const CHARACTERS_PER_PAGE = 30;
 
 // ─── Queries ──────────────────────────────────────────────────────────────────
 
@@ -14,6 +16,22 @@ export async function getCharacters(campaignId: string) {
     orderBy: (c, { asc }) => [asc(c.name)],
     with: { player: { columns: { id: true, displayName: true } } },
   });
+}
+
+export async function getCharactersPaginated(campaignId: string, page = 1) {
+  const offset = (page - 1) * CHARACTERS_PER_PAGE;
+  const [rows, [{ total }]] = await Promise.all([
+    db.query.characters.findMany({
+      where: and(eq(characters.campaignId, campaignId), isNull(characters.archivedAt)),
+      with: { player: { columns: { id: true, displayName: true } } },
+      orderBy: (c, { asc }) => [asc(c.name)],
+      limit: CHARACTERS_PER_PAGE,
+      offset,
+    }),
+    db.select({ total: count() }).from(characters)
+      .where(and(eq(characters.campaignId, campaignId), isNull(characters.archivedAt))),
+  ]);
+  return { characters: rows, total: Number(total), page, totalPages: Math.ceil(Number(total) / CHARACTERS_PER_PAGE) };
 }
 
 export async function getPlayerCharacters(campaignId: string, playerId: string) {

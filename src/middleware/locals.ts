@@ -42,9 +42,12 @@ export async function loadUser(
 
     res.locals.user = user ?? null;
 
-    // Session references a deleted user — clear it
+    // Session references a deleted user — clear it and send them to login
     if (!user) {
-      req.session.destroy(() => {});
+      req.session.destroy(() => {
+        res.redirect("/auth/login");
+      });
+      return;
     }
   } catch {
     // DB error — proceed without user rather than crashing the request

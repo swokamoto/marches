@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { requireCampaignRole } from "../middleware/campaign.js";
 import {
-  getCharacters,
+  getCharactersPaginated,
   getPlayerCharacters,
   getCharacterById,
   createCharacter,
@@ -19,16 +19,25 @@ const VALID_STATUSES: CharacterStatus[] = ["active", "retired", "dead"];
 
 router.get("/", async (req, res) => {
   const isGm = ["gm", "admin"].includes(res.locals.member.role);
+  const page = Math.max(1, parseInt(String(req.query.page ?? "1")));
 
-  // GMs see all characters; players see only their own
-  const characterList = isGm
-    ? await getCharacters(res.locals.campaign.id)
-    : await getPlayerCharacters(res.locals.campaign.id, req.session.userId!);
+  // GMs see all characters paginated; players see only their own (unpaginated — usually small set)
+  let characterList, total, totalPages;
+  if (isGm) {
+    ({ characters: characterList, total, totalPages } = await getCharactersPaginated(res.locals.campaign.id, page));
+  } else {
+    characterList = await getPlayerCharacters(res.locals.campaign.id, req.session.userId!);
+    total = characterList.length;
+    totalPages = 1;
+  }
 
   res.render("pages/characters/index.njk", {
     title: `Characters — ${res.locals.campaign.name}`,
     characterList,
     isGm,
+    page,
+    total,
+    totalPages,
   });
 });
 

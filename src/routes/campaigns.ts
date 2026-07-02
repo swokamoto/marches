@@ -128,7 +128,13 @@ router.post("/join", async (req, res) => {
     return res.redirect("/campaigns/join");
   }
 
-  await addMember(campaign.id, req.session.userId!);
+  const newMember = await addMember(campaign.id, req.session.userId!);
+
+  if (!newMember) {
+    // onConflictDoNothing returned nothing — user is already a member
+    req.session.flash = { error: `You are already a member of ${campaign.name}.` };
+    return res.redirect(`/campaigns/${campaign.slug}`);
+  }
 
   req.session.flash = { success: `You joined ${campaign.name}!` };
   res.redirect(`/campaigns/${campaign.slug}`);

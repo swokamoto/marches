@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { requireCampaignRole } from "../middleware/campaign.js";
-import { getJournalEntries, createJournalEntry } from "../services/journal.js";
+import { getJournalEntries, createJournalEntry, pinJournalEntry, unpinJournalEntry } from "../services/journal.js";
 import type { JournalEntityType, JournalVisibility } from "../services/journal.js";
 import { calcCampaignDay } from "../services/campaigns.js";
 
@@ -91,7 +91,7 @@ router.post("/:entityType/:entityId", async (req, res) => {
   });
 
   // Return updated entries partial for HTMX swap
-  const entries = await getJournalEntries(
+  const { entries, total, totalPages } = await getJournalEntries(
     res.locals.campaign.id,
     entityType,
     req.params.entityId,
@@ -103,8 +103,55 @@ router.post("/:entityType/:entityId", async (req, res) => {
     entries,
     entityType,
     entityId: req.params.entityId,
+    page: 1,
+    total,
+    totalPages,
     currentCampaignDay: calcCampaignDay(res.locals.campaign.createdAt),
   });
 });
+
+// ─── Pin / unpin (GM/admin only) ─────────────────────────────────────────────
+
+router.post(
+  "/:entityType/:entityId/:entryId/pin",
+  requireCampaignRole("gm", "admin"),
+  async (req, res) => {
+    const entityType = req.params.entityType as JournalEntityType;
+    if (!VALID_ENTITY_TYPES.includes(entityType)) {
+      return res.status(400).send("Invalid entity type.");
+    }
+    await pinJournalEntry(String(req.params.entryId));
+    const { entries, total, totalPages } = await getJournalEntries(
+      res.locals.campaign.id, entityType, String(req.params.entityId),
+      req.session.userId!, res.locals.member.role
+    );
+    res.render("partials/journal-entries.njk", {
+      entries, entityType, entityId: req.params.entityId,
+      page: 1, total, totalPages,
+      currentCampaignDay: calcCampaignDay(res.locals.campaign.createdAt),
+    });
+  }
+);
+
+router.post(
+  "/:entityType/:entityId/:entryId/unpin",
+  requireCampaignRole("gm", "admin"),
+  async (req, res) => {
+    const entityType = req.params.entityType as JournalEntityType;
+    if (!VALID_ENTITY_TYPES.includes(entityType)) {
+      return res.status(400).send("Invalid entity type.");
+    }
+    await unpinJournalEntry(String(req.params.entryId));
+    const { entries, total, totalPages } = await getJournalEntries(
+      res.locals.campaign.id, entityType, String(req.params.entityId),
+      req.session.userId!, res.locals.member.role
+    );
+    res.render("partials/journal-entries.njk", {
+      entries, entityType, entityId: req.params.entityId,
+      page: 1, total, totalPages,
+      currentCampaignDay: calcCampaignDay(res.locals.campaign.createdAt),
+    });
+  }
+);
 
 export default router;

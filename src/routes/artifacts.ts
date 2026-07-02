@@ -1,15 +1,19 @@
 import { Router } from "express";
 import { requireCampaignRole } from "../middleware/campaign.js";
-import { getArtifacts, getArtifactById, createArtifact, updateArtifactStatus, searchArtifacts, updateArtifactLocation, archiveArtifact } from "../services/artifacts.js";
+import { getArtifactsPaginated, getArtifactById, createArtifact, updateArtifact, updateArtifactStatus, searchArtifacts, updateArtifactLocation, archiveArtifact } from "../services/artifacts.js";
 import { getLocations } from "../services/locations.js";
 
 const router = Router({ mergeParams: true });
 
-router.get("/", async (_req, res) => {
-  const artifactList = await getArtifacts(res.locals.campaign.id);
+router.get("/", async (req, res) => {
+  const page = Math.max(1, parseInt(String(req.query.page ?? "1")));
+  const { artifacts: artifactList, total, totalPages } = await getArtifactsPaginated(res.locals.campaign.id, page);
   res.render("pages/artifacts/index.njk", {
     title: `Artifacts — ${res.locals.campaign.name}`,
     artifactList,
+    page,
+    total,
+    totalPages,
   });
 });
 
@@ -18,12 +22,12 @@ router.get("/new", requireCampaignRole("gm", "admin"), (_req, res) => {
 });
 
 router.post("/new", requireCampaignRole("gm", "admin"), async (req, res) => {
-  const { name } = req.body as { name: string };
+  const { name, description } = req.body as { name: string; description?: string };
   if (!name?.trim()) {
     req.session.flash = { error: "Artifact name is required." };
     return res.redirect(`/campaigns/${res.locals.campaign.slug}/artifacts/new`);
   }
-  const artifact = await createArtifact(res.locals.campaign.id, name, req.session.userId!);
+  const artifact = await createArtifact(res.locals.campaign.id, name, req.session.userId!, description);
   req.session.flash = { success: `Artifact "${artifact.name}" created.` };
   res.redirect(`/campaigns/${res.locals.campaign.slug}/artifacts/${artifact.id}`);
 });
@@ -49,6 +53,22 @@ router.get("/:artifactId", async (req, res) => {
     isGm,
   });
 });
+
+router.post(
+  "/:artifactId/description",
+  requireCampaignRole("gm", "admin"),
+  async (req, res) => {
+    const artifactId = Array.isArray(req.params.artifactId) ? req.params.artifactId[0] : req.params.artifactId;
+    const artifact = await getArtifactById(artifactId);
+    if (!artifact || artifact.campaignId !== res.locals.campaign.id) {
+      return res.status(404).render("pages/error.njk", { status: "404", message: "Artifact not found." });
+    }
+    const { description } = req.body as { description?: string };
+    await updateArtifact(artifact.id, { description });
+    req.session.flash = { success: "Description updated." };
+    res.redirect(`/campaigns/${res.locals.campaign.slug}/artifacts/${artifact.id}`);
+  }
+);
 
 router.post(
   "/:artifactId/status",

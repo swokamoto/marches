@@ -11,40 +11,60 @@
         {% include "partials/location-status-badge.njk" %}
       </div>
     </div>
-    <a
-      href="/campaigns/{{ campaign.slug }}/locations"
-      class="text-xs text-stone-600 hover:text-stone-400"
-    >
-      ← All locations
-    </a>
+    <div class="flex items-center gap-2 text-xs text-stone-600">
+      <a href="/campaigns/{{ campaign.slug }}/locations" class="hover:text-stone-400">← All locations</a>
+      {% if location.parent %}
+        <span>·</span>
+        <span>Part of
+          <a href="/campaigns/{{ campaign.slug }}/locations/{{ location.parent.slug }}"
+             class="text-stone-400 hover:text-stone-200">{{ location.parent.name }}</a>
+        </span>
+      {% endif %}
+    </div>
   </div>
 </div>
 
-{# ── Status update (GM/admin only) ── #}
+{# ── Status update + parent + archive (GM/admin only) ── #}
 {% if member.role in ['gm', 'admin'] %}
   <div class="mb-8 flex flex-wrap items-center gap-4">
     <div class="flex items-center gap-3">
-      <span class="text-sm text-stone-500">Update status:</span>
+      <span class="text-sm text-stone-500">Status:</span>
       <form
         hx-post="/campaigns/{{ campaign.slug }}/locations/{{ location.slug }}/status"
         hx-target="#location-status-badge"
         hx-swap="innerHTML"
         class="flex items-center gap-2"
       >
-        <select
-          name="status"
-          class="bg-stone-900 border border-stone-700 rounded px-3 py-1.5 text-sm text-stone-300
-                 focus:outline-none focus:border-stone-500"
-        >
+        <select name="status"
+                class="bg-stone-900 border border-stone-700 rounded px-3 py-1.5 text-sm text-stone-300
+                       focus:outline-none focus:border-stone-500">
           {% for s in ['open', 'active', 'ruined', 'destroyed', 'unknown'] %}
             <option value="{{ s }}" {% if location.status === s %}selected{% endif %}>{{ s }}</option>
           {% endfor %}
         </select>
-        <button
-          type="submit"
-          class="px-3 py-1.5 text-sm border border-stone-700 text-stone-400 rounded
-                 hover:border-stone-500 transition-colors"
-        >
+        <button type="submit"
+                class="px-3 py-1.5 text-sm border border-stone-700 text-stone-400 rounded hover:border-stone-500 transition-colors">
+          Save
+        </button>
+      </form>
+    </div>
+
+    <div class="flex items-center gap-3">
+      <span class="text-sm text-stone-500">Part of:</span>
+      <form method="POST" action="/campaigns/{{ campaign.slug }}/locations/{{ location.slug }}/parent"
+            class="flex items-center gap-2">
+        <select name="parent_location_id"
+                class="bg-stone-900 border border-stone-700 rounded px-3 py-1.5 text-sm text-stone-300
+                       focus:outline-none focus:border-stone-500">
+          <option value="">— None —</option>
+          {% for loc in allLocations %}
+            {% if loc.id !== location.id %}
+              <option value="{{ loc.id }}" {% if location.parentLocationId === loc.id %}selected{% endif %}>{{ loc.name }}</option>
+            {% endif %}
+          {% endfor %}
+        </select>
+        <button type="submit"
+                class="px-3 py-1.5 text-sm border border-stone-700 text-stone-400 rounded hover:border-stone-500 transition-colors">
           Save
         </button>
       </form>
@@ -57,8 +77,32 @@
   </div>
 {% endif %}
 
+{# ── Sub-locations ── #}
+{% if location.children.length > 0 %}
+  <div class="mb-8">
+    <h2 class="text-xs font-semibold text-stone-500 uppercase tracking-widest mb-3">Sub-locations</h2>
+    <div class="flex flex-wrap gap-2">
+      {% for child in location.children %}
+        <a href="/campaigns/{{ campaign.slug }}/locations/{{ child.slug }}"
+           class="text-sm text-stone-300 bg-stone-900 border border-stone-800 rounded px-3 py-1
+                  hover:border-stone-700 transition-colors">
+          {{ child.name }}
+        </a>
+      {% endfor %}
+    </div>
+  </div>
+{% endif %}
+
+{# ── Connections ── #}
+<div class="mb-8 border-t border-stone-800 pt-8">
+  <h2 class="text-xs font-semibold text-stone-500 uppercase tracking-widest mb-4">Connections</h2>
+  <div id="connections-section">
+    {% include "partials/location-connections.njk" %}
+  </div>
+</div>
+
 {# ── Journal entries ── #}
-<div id="journal-section">
+<div id="journal-section" class="border-t border-stone-800 pt-8">
   <div
     hx-get="/campaigns/{{ campaign.slug }}/journal/location/{{ location.id }}"
     hx-trigger="load"
@@ -67,14 +111,6 @@
   >
     <p class="text-stone-600 text-sm htmx-indicator">Loading records...</p>
   </div>
-</div>
-
-{# ── Appeared in expeditions (stub) ── #}
-<div class="mt-10">
-  <h2 class="text-sm font-medium text-stone-500 uppercase tracking-wide mb-3">
-    Appeared In
-  </h2>
-  <p class="text-stone-700 text-sm">No expeditions recorded yet.</p>
 </div>
 
 {% endblock %}

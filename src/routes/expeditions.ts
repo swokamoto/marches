@@ -182,11 +182,12 @@ router.post(
 
 router.post("/:expeditionId/locations/add", requireCampaignRole("gm", "admin"), async (req, res) => {
   const { locationId } = req.body as { locationId: string };
+  const campaignLocations = await getLocations(res.locals.campaign.id);
+  if (!campaignLocations.some((l) => l.id === locationId)) {
+    return res.status(400).render("pages/error.njk", { status: "400", message: "Invalid location." });
+  }
   await addExpeditionLocation(req.params.expeditionId as string, locationId);
-  const [expedition, campaignLocations] = await Promise.all([
-    getExpeditionById(req.params.expeditionId as string),
-    getLocations(res.locals.campaign.id),
-  ]);
+  const expedition = await getExpeditionById(req.params.expeditionId as string);
   res.render("partials/expedition-locations.njk", { expedition, campaignLocations });
 });
 
@@ -202,11 +203,12 @@ router.post("/:expeditionId/locations/remove", requireCampaignRole("gm", "admin"
 
 router.post("/:expeditionId/npcs/add", requireCampaignRole("gm", "admin"), async (req, res) => {
   const { npcId } = req.body as { npcId: string };
+  const campaignNpcs = await getNpcs(res.locals.campaign.id);
+  if (!campaignNpcs.some((n) => n.id === npcId)) {
+    return res.status(400).render("pages/error.njk", { status: "400", message: "Invalid NPC." });
+  }
   await addExpeditionNpc(req.params.expeditionId as string, npcId);
-  const [expedition, campaignNpcs] = await Promise.all([
-    getExpeditionById(req.params.expeditionId as string),
-    getNpcs(res.locals.campaign.id),
-  ]);
+  const expedition = await getExpeditionById(req.params.expeditionId as string);
   res.render("partials/expedition-npcs.njk", { expedition, campaignNpcs });
 });
 
@@ -222,11 +224,12 @@ router.post("/:expeditionId/npcs/remove", requireCampaignRole("gm", "admin"), as
 
 router.post("/:expeditionId/artifacts/add", requireCampaignRole("gm", "admin"), async (req, res) => {
   const { artifactId } = req.body as { artifactId: string };
+  const campaignArtifacts = await getArtifacts(res.locals.campaign.id);
+  if (!campaignArtifacts.some((a) => a.id === artifactId)) {
+    return res.status(400).render("pages/error.njk", { status: "400", message: "Invalid artifact." });
+  }
   await addExpeditionArtifact(req.params.expeditionId as string, artifactId);
-  const [expedition, campaignArtifacts] = await Promise.all([
-    getExpeditionById(req.params.expeditionId as string),
-    getArtifacts(res.locals.campaign.id),
-  ]);
+  const expedition = await getExpeditionById(req.params.expeditionId as string);
   res.render("partials/expedition-artifacts.njk", { expedition, campaignArtifacts });
 });
 
@@ -288,7 +291,7 @@ router.post("/:expeditionId/leave", async (req, res) => {
   });
 });
 
-  router.post(
+router.post(
   "/:expeditionId/sessions/create",
   requireCampaignRole("gm", "admin"),
   async (req, res) => {

@@ -18,7 +18,6 @@ import type { WorldChangeType } from "../services/world-changes.js";
 import { getLocations } from "../services/locations.js";
 import { getNpcs } from "../services/npcs.js";
 import { logActivity } from "../services/activity.js";
-import { calcCampaignDay } from "../services/campaigns.js";
 
 const router = Router({ mergeParams: true });
 
@@ -34,32 +33,6 @@ const VALID_CHANGE_TYPES: WorldChangeType[] = [
   "faction_event",
   "custom",
 ];
-
-// ─── Create session (called from expedition detail) ───────────────────────────
-// Mounted at POST /campaigns/:slug/expeditions/:expeditionId/sessions/create
-// via the expeditions router passing through to sessions.
-
-export async function createSessionHandler(
-  req: import("express").Request,
-  res: import("express").Response
-): Promise<void> {
-  const { campaign_day } = req.body as { campaign_day?: string };
-  const playedAt = new Date();
-  const campaignDay = campaign_day
-    ? parseInt(campaign_day)
-    : calcCampaignDay(res.locals.campaign.createdAt, playedAt);
-
-  const session = await createSession({
-    expeditionId: req.params.expeditionId as string,
-    gmId: req.session.userId!,
-    campaignId: res.locals.campaign.id,
-    campaignDay,
-    playedAt,
-  });
-
-  req.session.flash = { success: "Session started." };
-  res.redirect(`/campaigns/${res.locals.campaign.slug}/sessions/${session.id}`);
-}
 
 // ─── Campaign sessions index ──────────────────────────────────────────────────
 router.get("/", async (req, res) => {
@@ -339,7 +312,12 @@ router.post(
   async (req, res) => {
     const session = await getSessionById(req.params.sessionId as string);
     if (!session || session.campaignId !== res.locals.campaign.id) {
-      return res.status(404).render("pages/error.njk", { message: "Session not found." });
+      return res.status(404).render("pages/error.njk", { status: "404", message: "Session not found." });
+    }
+
+    if (session.status === "closed") {
+      req.session.flash = { error: "Session is already closed." };
+      return res.redirect(`/campaigns/${res.locals.campaign.slug}/sessions/${session.id}`);
     }
 
     await updateSessionStatus(session.id, "closed");

@@ -70,3 +70,34 @@ export async function loginUser(
 
   return { id: user.id, displayName: user.displayName };
 }
+
+export async function updateAccountSettings(
+  userId: string,
+  params: { displayName: string }
+): Promise<void> {
+  await db
+    .update(users)
+    .set({ displayName: params.displayName.trim(), updatedAt: new Date() })
+    .where(eq(users.id, userId));
+}
+
+export async function changePassword(
+  userId: string,
+  currentPassword: string,
+  newPassword: string
+): Promise<{ error: "invalid_credentials" | "user_not_found" } | { success: true }> {
+  const user = await db.query.users.findFirst({
+    where: eq(users.id, userId),
+    columns: { id: true, passwordHash: true },
+  });
+
+  if (!user) return { error: "user_not_found" };
+  if (!user.passwordHash) return { error: "invalid_credentials" };
+
+  const valid = await bcrypt.compare(currentPassword, user.passwordHash);
+  if (!valid) return { error: "invalid_credentials" };
+
+  const passwordHash = await bcrypt.hash(newPassword, SALT_ROUNDS);
+  await db.update(users).set({ passwordHash, updatedAt: new Date() }).where(eq(users.id, userId));
+  return { success: true };
+}

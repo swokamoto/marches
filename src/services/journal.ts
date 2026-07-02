@@ -95,3 +95,10 @@ export async function pinJournalEntry(entryId: string) {
     .set({ pinned: true, updatedAt: new Date() })
     .where(eq(journalEntries.id, entryId));
 }
+
+export async function unpinJournalEntry(entryId: string) {
+  await db
+    .update(journalEntries)
+    .set({ pinned: false, updatedAt: new Date() })
+    .where(eq(journalEntries.id, entryId));
+}

@@ -10,7 +10,7 @@ router.get("/register", requireGuest, (req, res) => {
   res.render("pages/auth/register.njk", { title: "Create account" });
 });
 
-router.post("/register", requireGuest, async (req, res) => {
+router.post("/register", requireGuest, async (req, res, next) => {
   const { email, displayName, password, confirmPassword } = req.body as {
     email: string;
     displayName: string;
@@ -40,9 +40,12 @@ router.post("/register", requireGuest, async (req, res) => {
     return res.redirect("/auth/register");
   }
 
-  req.session.userId = result.id;
-  req.session.flash = { success: `Welcome, ${result.displayName}.` };
-  res.redirect("/");
+  req.session.regenerate((err) => {
+    if (err) return next(err);
+    req.session.userId = result.id;
+    req.session.flash = { success: `Welcome, ${result.displayName}.` };
+    res.redirect("/");
+  });
 });
 
 // ─── Login ────────────────────────────────────────────────────────────────────
@@ -51,7 +54,7 @@ router.get("/login", requireGuest, (req, res) => {
   res.render("pages/auth/login.njk", { title: "Sign in" });
 });
 
-router.post("/login", requireGuest, async (req, res) => {
+router.post("/login", requireGuest, async (req, res, next) => {
   const { email, password } = req.body as { email: string; password: string };
 
   if (!email || !password) {
@@ -67,8 +70,11 @@ router.post("/login", requireGuest, async (req, res) => {
     return res.redirect("/auth/login");
   }
 
-  req.session.userId = result.id;
-  res.redirect("/");
+  req.session.regenerate((err) => {
+    if (err) return next(err);
+    req.session.userId = result.id;
+    res.redirect("/");
+  });
 });
 
 // ─── Logout ───────────────────────────────────────────────────────────────────

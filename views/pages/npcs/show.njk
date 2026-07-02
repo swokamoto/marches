@@ -6,6 +6,9 @@
       <h1 class="text-2xl font-semibold text-stone-100">{{ npc.name }}</h1>
       <div id="npc-status-badge">{% include "partials/npc-status-badge.njk" %}</div>
     </div>
+    {% if npc.description %}
+      <p class="text-stone-400 text-sm mb-1">{{ npc.description }}</p>
+    {% endif %}
     <a href="/campaigns/{{ campaign.slug }}/npcs" class="text-xs text-stone-600 hover:text-stone-400">← All NPCs</a>
   </div>
 </div>
@@ -43,6 +46,21 @@
     <form method="POST" action="/campaigns/{{ campaign.slug }}/npcs/{{ npc.id }}/archive"
           onsubmit="return confirm('Archive {{ npc.name }}? They will be hidden from all lists.')">
       <button type="submit" class="px-3 py-1.5 text-sm border border-stone-800 text-stone-600 rounded hover:border-red-800 hover:text-red-500 transition-colors">Archive</button>
+    </form>
+  </div>
+
+  {# Description edit #}
+  <div class="mb-8">
+    <form method="POST" action="/campaigns/{{ campaign.slug }}/npcs/{{ npc.id }}/description"
+          class="flex items-end gap-2">
+      <div class="flex-1">
+        <label class="block text-xs text-stone-600 mb-1">Brief description</label>
+        <input type="text" name="description" value="{{ npc.description or '' }}"
+               placeholder="Short description of this NPC"
+               class="w-full bg-stone-900 border border-stone-700 rounded px-3 py-1.5 text-sm text-stone-300
+                      focus:outline-none focus:border-stone-500 transition-colors"/>
+      </div>
+      <button type="submit" class="px-3 py-1.5 text-sm border border-stone-700 text-stone-400 rounded hover:border-stone-500 transition-colors">Save</button>
     </form>
   </div>
 {% elif npc.locationId %}

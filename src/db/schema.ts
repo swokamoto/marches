@@ -232,6 +232,7 @@ export const npcs = pgTable("npcs", {
     .notNull()
     .references(() => campaigns.id, { onDelete: "cascade" }),
   name: text("name").notNull(),
+  description: text("description"),
   status: npcStatusEnum("status").notNull().default("alive"),
   locationId: uuid("location_id").references(() => locations.id, {
     onDelete: "set null",
@@ -249,6 +250,7 @@ export const artifacts = pgTable("artifacts", {
     .notNull()
     .references(() => campaigns.id, { onDelete: "cascade" }),
   name: text("name").notNull(),
+  description: text("description"),
   status: artifactStatusEnum("status").notNull().default("extant"),
   locationId: uuid("location_id").references(() => locations.id, {
     onDelete: "set null",
@@ -684,6 +686,32 @@ export const sessionPlayerNotesRelations = relations(
     }),
   })
 );
+
+export const locationsRelations = relations(locations, ({ one, many }) => ({
+  campaign: one(campaigns, {
+    fields: [locations.campaignId],
+    references: [campaigns.id],
+  }),
+  parent: one(locations, {
+    fields: [locations.parentLocationId],
+    references: [locations.id],
+    relationName: "location_parent",
+  }),
+  children: many(locations, { relationName: "location_parent" }),
+  connectionsFrom: many(locationConnections, { relationName: "connection_from" }),
+}));
+
+export const locationConnectionsRelations = relations(locationConnections, ({ one }) => ({
+  fromLocation: one(locations, {
+    fields: [locationConnections.fromLocationId],
+    references: [locations.id],
+    relationName: "connection_from",
+  }),
+  toLocation: one(locations, {
+    fields: [locationConnections.toLocationId],
+    references: [locations.id],
+  }),
+}));
 
 export const npcsRelations = relations(npcs, ({ one }) => ({
   campaign: one(campaigns, {

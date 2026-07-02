@@ -11,7 +11,7 @@
   </a>
 </div>
 
-{% if characterList.length === 0 %}
+{% if characterList.length === 0 and page === 1 %}
   <p class="text-stone-600 text-sm">
     {% if isGm %}No characters yet.{% else %}You haven't created any characters. <a href="/campaigns/{{ campaign.slug }}/characters/new" class="text-stone-400 hover:text-stone-200 underline">Create one</a> to join expeditions.{% endif %}
   </p>
@@ -40,6 +40,21 @@
       </a>
     {% endfor %}
   </div>
+
+  {% if totalPages > 1 %}
+    <div class="flex items-center justify-between mt-6 text-sm text-stone-500">
+      <span>{{ total }} character{{ 's' if total !== 1 }}</span>
+      <div class="flex items-center gap-2">
+        {% if page > 1 %}
+          <a href="?page={{ page - 1 }}" class="px-3 py-1.5 border border-stone-700 rounded hover:border-stone-500 transition-colors">← Prev</a>
+        {% endif %}
+        <span class="text-stone-600">{{ page }} / {{ totalPages }}</span>
+        {% if page < totalPages %}
+          <a href="?page={{ page + 1 }}" class="px-3 py-1.5 border border-stone-700 rounded hover:border-stone-500 transition-colors">Next →</a>
+        {% endif %}
+      </div>
+    </div>
+  {% endif %}
 {% endif %}
 
 {% endblock %}

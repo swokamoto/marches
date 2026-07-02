@@ -7,6 +7,7 @@ import { flashMiddleware, loadUser } from "./middleware/locals.js";
 import { requireAuth } from "./middleware/auth.js";
 import authRouter from "./routes/auth.js";
 import campaignsRouter from "./routes/campaigns.js";
+import accountRouter from "./routes/account.js";
 
 const app = express();
 
@@ -39,6 +40,7 @@ configureTemplates(app);
 
 app.use("/auth", authLimiter, authRouter);
 app.use("/campaigns", campaignsRouter);
+app.use("/account", accountRouter);
 
 app.get("/", (req, res) => {
   if (req.session.userId) return res.redirect("/dashboard");

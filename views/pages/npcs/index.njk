@@ -10,7 +10,7 @@
   {% endif %}
 </div>
 
-{% if npcList.length === 0 %}
+{% if npcList.length === 0 and page === 1 %}
   <div class="border border-dashed border-stone-800 rounded p-12 text-center">
     <p class="text-stone-500">No NPCs recorded yet.</p>
   </div>
@@ -23,11 +23,28 @@
           <span class="font-medium text-stone-100">{{ npc.name }}</span>
           {% include "partials/npc-status-badge.njk" %}
         </div>
-        {% if npc.location %}
+        {% if npc.description %}
+          <p class="text-xs text-stone-600 mt-1 truncate">{{ npc.description }}</p>
+        {% elif npc.location %}
           <p class="text-xs text-stone-600 mt-1">@ {{ npc.location.name }}</p>
         {% endif %}
       </a>
     {% endfor %}
   </div>
+
+  {% if totalPages > 1 %}
+    <div class="flex items-center justify-between mt-6 text-sm text-stone-500">
+      <span>{{ total }} NPC{{ 's' if total !== 1 }}</span>
+      <div class="flex items-center gap-2">
+        {% if page > 1 %}
+          <a href="?page={{ page - 1 }}" class="px-3 py-1.5 border border-stone-700 rounded hover:border-stone-500 transition-colors">← Prev</a>
+        {% endif %}
+        <span class="text-stone-600">{{ page }} / {{ totalPages }}</span>
+        {% if page < totalPages %}
+          <a href="?page={{ page + 1 }}" class="px-3 py-1.5 border border-stone-700 rounded hover:border-stone-500 transition-colors">Next →</a>
+        {% endif %}
+      </div>
+    </div>
+  {% endif %}
 {% endif %}
 {% endblock %}

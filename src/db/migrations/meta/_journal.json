@@ -15,6 +15,13 @@
       "when": 1782941218677,
       "tag": "0001_add_archived_at",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1782992714256,
+      "tag": "0002_entity_descriptions",
+      "breakpoints": true
     }
   ]
 }

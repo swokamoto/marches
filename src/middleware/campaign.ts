@@ -12,14 +12,14 @@ export async function loadCampaign(
   const slugStr = Array.isArray(slug) ? slug[0] : slug;
 
   if (!slugStr) {
-    res.status(400).render("pages/error.njk", { message: "Missing campaign slug." });
+    res.status(400).render("pages/error.njk", { status: "400", message: "Missing campaign slug." });
     return;
   }
 
   const campaign = await getCampaignBySlug(slugStr);
 
   if (!campaign) {
-    res.status(404).render("pages/error.njk", { message: "Campaign not found." });
+    res.status(404).render("pages/error.njk", { status: "404", message: "Campaign not found." });
     return;
   }
 
@@ -41,9 +41,7 @@ export async function requireCampaignMember(
   const member = await getCampaignMember(campaign.id, userId);
 
   if (!member) {
-    res.status(403).render("pages/error.njk", {
-      message: "You are not a member of this campaign.",
-    });
+    res.status(403).render("pages/error.njk", { status: "403", message: "You are not a member of this campaign." });
     return;
   }
 

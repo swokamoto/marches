@@ -75,7 +75,7 @@ export async function addMember(
   campaignId: string,
   userId: string,
   role: CampaignMemberRole = "player"
-): Promise<CampaignMember> {
+): Promise<CampaignMember | undefined> {
   const [member] = await db
     .insert(campaignMembers)
     .values({ campaignId, userId, role })

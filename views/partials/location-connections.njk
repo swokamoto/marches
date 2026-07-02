@@ -1,0 +1,65 @@
+{# Location connections panel — HTMX partial #}
+{# Expects: location (with connectionsFrom), allLocations, member (from res.locals) #}
+
+<div class="space-y-2 mb-4">
+  {% if location.connectionsFrom.length === 0 %}
+    <p class="text-stone-700 text-sm">No connections defined.</p>
+  {% else %}
+    {% for conn in location.connectionsFrom %}
+      <div class="flex items-center justify-between bg-stone-900 border border-stone-800 rounded px-4 py-2">
+        <div>
+          <a href="/campaigns/{{ campaign.slug }}/locations/{{ conn.toLocation.slug }}"
+             class="text-stone-200 hover:text-stone-100 text-sm font-medium">
+            → {{ conn.toLocation.name }}
+          </a>
+          {% if conn.description %}
+            <span class="text-stone-600 text-xs ml-2">{{ conn.description }}</span>
+          {% endif %}
+        </div>
+        {% if member.role in ['gm', 'admin'] %}
+          <form
+            hx-post="/campaigns/{{ campaign.slug }}/locations/{{ location.slug }}/connections/{{ conn.id }}/remove"
+            hx-target="#connections-section"
+            hx-swap="innerHTML"
+          >
+            <button type="submit"
+                    class="text-xs text-stone-700 hover:text-red-500 transition-colors">Remove</button>
+          </form>
+        {% endif %}
+      </div>
+    {% endfor %}
+  {% endif %}
+</div>
+
+{% if member.role in ['gm', 'admin'] %}
+  <form
+    hx-post="/campaigns/{{ campaign.slug }}/locations/{{ location.slug }}/connections/add"
+    hx-target="#connections-section"
+    hx-swap="innerHTML"
+    class="flex items-end gap-2 flex-wrap"
+  >
+    <div class="flex-1 min-w-40">
+      <label class="block text-xs text-stone-600 mb-1">Destination</label>
+      <select name="to_location_id"
+              class="w-full bg-stone-900 border border-stone-700 rounded px-3 py-1.5 text-sm text-stone-300
+                     focus:outline-none focus:border-stone-500">
+        <option value="">— Select location —</option>
+        {% for loc in allLocations %}
+          {% if loc.id !== location.id %}
+            <option value="{{ loc.id }}">{{ loc.name }}</option>
+          {% endif %}
+        {% endfor %}
+      </select>
+    </div>
+    <div class="flex-1 min-w-40">
+      <label class="block text-xs text-stone-600 mb-1">Description <span class="text-stone-700">(optional)</span></label>
+      <input type="text" name="description" placeholder="3-day march through the marshes"
+             class="w-full bg-stone-900 border border-stone-700 rounded px-3 py-1.5 text-sm text-stone-300
+                    focus:outline-none focus:border-stone-500" />
+    </div>
+    <button type="submit"
+            class="px-3 py-1.5 text-sm border border-stone-700 text-stone-400 rounded hover:border-stone-500 transition-colors">
+      Add
+    </button>
+  </form>
+{% endif %}
