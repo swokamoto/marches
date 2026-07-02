@@ -20,13 +20,17 @@ Keeping track of all that across multiple game masters and dozens of players, us
 
 **The world map** — GMs track locations, how they connect, and what state they're in. A forest clearing might start as "unexplored", become "active" once players find it, and end up "ruined" after a battle. Locations can be nested (the dungeon is inside the forest, the throne room is inside the dungeon).
 
-**NPCs and artifacts** — Key characters and objects have their own pages, tracking their current status and where they were last seen.
+**NPCs and artifacts** — Key characters and objects have their own pages, tracking their current status, description, and where they were last seen.
+
+**Characters** — Players create and manage their own characters within a campaign. GMs can view all characters; players see their own.
 
 **Expeditions** — Before a session, a GM proposes an expedition: where they're going, who's invited, what they're after. The app checks for conflicts — if two GMs are both planning to visit the same location or interact with the same NPC, everyone gets a warning before anyone commits.
 
 **Sessions and reports** — After playing, the GM writes up what happened as a structured report. World changes (new discoveries, NPCs killed, routes opened) get logged and feed into the timeline. Players can add their own private notes.
 
-**Journal** — Anyone can write journal entries attached to any location, NPC, artifact, character, or session. Public entries are visible to the whole campaign; private ones are just for you.
+**Journal** — Anyone can write journal entries attached to any location, NPC, artifact, character, or session. Public entries are visible to the whole campaign; private ones are just for you. GMs can pin notable entries.
+
+**Activity feed** — A live feed of recent campaign actions on the campaign homepage. GM-sensitive entries (new NPCs, locations, artifacts) are hidden from players until the GM is ready to reveal them.
 
 **Timeline** — A chronological view of everything that has happened in the campaign world, ordered by in-game date.
 
@@ -40,7 +44,7 @@ Keeping track of all that across multiple game masters and dozens of players, us
 | **Backend** | Node.js 22, Express 5 |
 | **Database** | PostgreSQL 16, Drizzle ORM |
 | **Frontend** | Server-rendered HTML (Nunjucks templates), Tailwind CSS v4, HTMX |
-| **Auth** | Session-based login with bcrypt password hashing |
+| **Auth** | Session-based login, bcrypt password hashing, CSRF protection |
 | **Deployment** | Docker, Fly.io |
 
 There's no React or other frontend framework. Pages are rendered on the server and sent as HTML. HTMX handles the small interactive bits — loading journal entries inline, swapping status badges without a full page reload — without needing a separate API layer.
@@ -81,7 +85,7 @@ cp .env.example .env
 # Open .env and set SESSION_SECRET to any long random string
 
 # Apply the database schema
-npx drizzle-kit migrate
+npm run db:migrate
 
 # Start the dev server
 npm run dev
@@ -103,6 +107,8 @@ npm run test:integration
 ```
 
 Unit tests cover pure utility functions (`slugify`, `calcCampaignDay`) and route input validation rules. Integration tests run against a real PostgreSQL instance (`marches_test` on port 5433) and cover the auth, campaign, and location service layers end-to-end.
+
+The integration test database is managed by Docker (`test-db` service) and uses an in-memory volume so it stays clean between runs. Migrations are applied automatically before the test suite starts.
 
 ---
 
