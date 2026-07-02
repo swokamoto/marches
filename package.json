@@ -15,7 +15,7 @@
     "test:all": "vitest run && vitest run --config vitest.integration.config.ts",
     "typecheck": "tsc --noEmit",
     "db:generate": "drizzle-kit generate",
-    "db:migrate": "drizzle-kit migrate",
+    "db:migrate": "tsx src/db/migrate.ts",
     "db:migrate:direct": "docker exec -i winter-db-1 psql -U marches -d marches_dev < src/db/migrations/0000_melted_manta.sql",
     "db:studio": "drizzle-kit studio",
     "db:push": "drizzle-kit push"

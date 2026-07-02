@@ -1,6 +1,6 @@
 import { db } from "../db/index.js";
 import { activityLog } from "../db/schema.js";
-import { eq, desc } from "drizzle-orm";
+import { eq, desc, and } from "drizzle-orm";
 
 export async function logActivity(params: {
   campaignId: string;
@@ -9,6 +9,7 @@ export async function logActivity(params: {
   entityType?: string;
   entityId?: string;
   metadata?: Record<string, unknown>;
+  gmOnly?: boolean;
 }): Promise<void> {
   await db.insert(activityLog).values({
     campaignId: params.campaignId,
@@ -17,12 +18,24 @@ export async function logActivity(params: {
     entityType: params.entityType ?? null,
     entityId: params.entityId ?? null,
     metadata: params.metadata ?? null,
+    gmOnly: params.gmOnly ?? false,
   });
 }
 
-export async function getRecentActivity(campaignId: string, limit = 20) {
+export async function getRecentActivity(
+  campaignId: string,
+  viewerIsGm: boolean,
+  limit = 20
+) {
+  const conditions = viewerIsGm
+    ? eq(activityLog.campaignId, campaignId)
+    : and(
+        eq(activityLog.campaignId, campaignId),
+        eq(activityLog.gmOnly, false)
+      );
+
   return db.query.activityLog.findMany({
-    where: eq(activityLog.campaignId, campaignId),
+    where: conditions,
     orderBy: [desc(activityLog.occurredAt)],
     limit,
     with: {
@@ -55,12 +68,22 @@ export function describeActivity(item: {
       return `${actor} closed session for "${meta.expeditionTitle ?? ""}"`;
     case "character.created":
       return `${actor} created character "${meta.name ?? ""}"`;
+    case "character.archived":
+      return `${actor} archived character "${meta.name ?? ""}"`;
     case "location.created":
       return `${actor} added location "${meta.name ?? ""}"`;
+    case "location.archived":
+      return `${actor} archived location "${meta.name ?? ""}"`;
     case "npc.created":
       return `${actor} added NPC "${meta.name ?? ""}"`;
+    case "npc.archived":
+      return `${actor} archived NPC "${meta.name ?? ""}"`;
     case "artifact.created":
       return `${actor} added artifact "${meta.name ?? ""}"`;
+    case "artifact.archived":
+      return `${actor} archived artifact "${meta.name ?? ""}"`;
+    case "member.joined":
+      return `${actor} joined the campaign`;
     case "world_event.created":
       return `World event: "${meta.title ?? ""}"`;
     default:

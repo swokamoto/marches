@@ -2,6 +2,7 @@ import { Router } from "express";
 import { requireCampaignRole } from "../middleware/campaign.js";
 import { getArtifactsPaginated, getArtifactById, createArtifact, updateArtifact, updateArtifactStatus, searchArtifacts, updateArtifactLocation, archiveArtifact } from "../services/artifacts.js";
 import { getLocations } from "../services/locations.js";
+import { logActivity } from "../services/activity.js";
 
 const router = Router({ mergeParams: true });
 
@@ -28,6 +29,15 @@ router.post("/new", requireCampaignRole("gm", "admin"), async (req, res) => {
     return res.redirect(`/campaigns/${res.locals.campaign.slug}/artifacts/new`);
   }
   const artifact = await createArtifact(res.locals.campaign.id, name, req.session.userId!, description);
+  void logActivity({
+    campaignId: res.locals.campaign.id,
+    actorId: req.session.userId!,
+    actionType: "artifact.created",
+    entityType: "artifact",
+    entityId: artifact.id,
+    metadata: { name: artifact.name },
+    gmOnly: true,
+  });
   req.session.flash = { success: `Artifact "${artifact.name}" created.` };
   res.redirect(`/campaigns/${res.locals.campaign.slug}/artifacts/${artifact.id}`);
 });
@@ -122,6 +132,15 @@ router.post(
       return res.status(404).render("pages/error.njk", { status: "404", message: "Artifact not found." });
     }
     await archiveArtifact(artifact.id);
+    void logActivity({
+      campaignId: res.locals.campaign.id,
+      actorId: req.session.userId!,
+      actionType: "artifact.archived",
+      entityType: "artifact",
+      entityId: artifact.id,
+      metadata: { name: artifact.name },
+      gmOnly: true,
+    });
     req.session.flash = { success: `"${artifact.name}" has been archived.` };
     res.redirect(`/campaigns/${res.locals.campaign.slug}/artifacts`);
   }

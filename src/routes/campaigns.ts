@@ -19,7 +19,7 @@ import sessionsRouter from "./sessions.js";
 import charactersRouter from "./characters.js";
 import timelineRouter from "./timeline.js";
 import membersRouter from "./members.js";
-import { getRecentActivity, describeActivity } from "../services/activity.js";
+import { getRecentActivity, describeActivity, logActivity } from "../services/activity.js";
 import { getExpeditions } from "../services/expeditions.js";
 import { getWorldEvents } from "../services/timeline.js";
 import { getCampaignByInviteCode, addMember } from "../services/members.js";
@@ -136,6 +136,14 @@ router.post("/join", async (req, res) => {
     return res.redirect(`/campaigns/${campaign.slug}`);
   }
 
+  void logActivity({
+    campaignId: campaign.id,
+    actorId: req.session.userId!,
+    actionType: "member.joined",
+    metadata: {},
+    gmOnly: false,
+  });
+
   req.session.flash = { success: `You joined ${campaign.name}!` };
   res.redirect(`/campaigns/${campaign.slug}`);
 });
@@ -173,7 +181,10 @@ router.get(
   loadCampaign,
   requireCampaignMember,
   async (_req, res) => {
-    const raw = await getRecentActivity(res.locals.campaign.id);
+    const raw = await getRecentActivity(
+      res.locals.campaign.id,
+      ["gm", "admin"].includes(res.locals.member.role)
+    );
     const activities = raw.map((item) => ({
       ...item,
       description: describeActivity(item),

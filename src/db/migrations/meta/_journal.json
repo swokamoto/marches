@@ -22,6 +22,13 @@
       "when": 1782992714256,
       "tag": "0002_entity_descriptions",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1751500000000,
+      "tag": "0003_activity_gm_only",
+      "breakpoints": true
     }
   ]
 }

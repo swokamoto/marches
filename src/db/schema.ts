@@ -493,6 +493,7 @@ export const activityLog = pgTable("activity_log", {
   entityType: text("entity_type"), // e.g. 'expedition', 'location'
   entityId: uuid("entity_id"),
   metadata: jsonb("metadata"), // full snapshot of what changed
+  gmOnly: boolean("gm_only").notNull().default(false), // hidden from players/observers
   occurredAt: timestamp("occurred_at", { withTimezone: true })
     .notNull()
     .defaultNow(),

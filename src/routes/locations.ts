@@ -11,6 +11,7 @@ import {
   addLocationConnection,
   removeLocationConnection,
 } from "../services/locations.js";
+import { logActivity } from "../services/activity.js";
 
 // mergeParams: true gives access to :slug from the parent campaigns router
 const router = Router({ mergeParams: true });
@@ -46,6 +47,16 @@ router.post("/new", requireCampaignRole("gm", "admin"), async (req, res) => {
     req.session.userId!,
     parent_location_id || undefined
   );
+
+  void logActivity({
+    campaignId: res.locals.campaign.id,
+    actorId: req.session.userId!,
+    actionType: "location.created",
+    entityType: "location",
+    entityId: location.id,
+    metadata: { name: location.name },
+    gmOnly: true,
+  });
 
   req.session.flash = { success: `Location "${location.name}" created.` };
   res.redirect(
@@ -142,6 +153,15 @@ router.post(
     const location = await getLocationBySlug(res.locals.campaign.id, slug);
     if (!location) return res.status(404).render("pages/error.njk", { status: "404", message: "Location not found." });
     await archiveLocation(location.id);
+    void logActivity({
+      campaignId: res.locals.campaign.id,
+      actorId: req.session.userId!,
+      actionType: "location.archived",
+      entityType: "location",
+      entityId: location.id,
+      metadata: { name: location.name },
+      gmOnly: true,
+    });
     req.session.flash = { success: `"${location.name}" has been archived.` };
     res.redirect(`/campaigns/${res.locals.campaign.slug}/locations`);
   }

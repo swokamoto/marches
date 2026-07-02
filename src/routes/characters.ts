@@ -10,6 +10,7 @@ import {
   archiveCharacter,
 } from "../services/characters.js";
 import type { CharacterStatus } from "../services/characters.js";
+import { logActivity } from "../services/activity.js";
 
 const router = Router({ mergeParams: true });
 
@@ -64,6 +65,16 @@ router.post("/new", async (req, res) => {
     playerId: req.session.userId!,
     name,
     description,
+  });
+
+  void logActivity({
+    campaignId: res.locals.campaign.id,
+    actorId: req.session.userId!,
+    actionType: "character.created",
+    entityType: "character",
+    entityId: character.id,
+    metadata: { name: character.name },
+    gmOnly: false,
   });
 
   req.session.flash = { success: `Character "${character.name}" created.` };
@@ -213,6 +224,15 @@ router.post("/:characterId/archive", async (req, res) => {
     return res.status(403).render("pages/error.njk", { status: "403", message: "Not authorised." });
   }
   await archiveCharacter(character.id);
+  void logActivity({
+    campaignId: res.locals.campaign.id,
+    actorId: req.session.userId!,
+    actionType: "character.archived",
+    entityType: "character",
+    entityId: character.id,
+    metadata: { name: character.name },
+    gmOnly: false,
+  });
   req.session.flash = { success: `"${character.name}" has been archived.` };
   res.redirect(`/campaigns/${res.locals.campaign.slug}/characters`);
 });

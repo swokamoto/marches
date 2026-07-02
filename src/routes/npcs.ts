@@ -2,6 +2,7 @@ import { Router } from "express";
 import { requireCampaignRole } from "../middleware/campaign.js";
 import { getNpcsPaginated, getNpcById, createNpc, updateNpc, updateNpcStatus, searchNpcs, updateNpcLocation, getNpcsWithLocation, archiveNpc } from "../services/npcs.js";
 import { getLocations } from "../services/locations.js";
+import { logActivity } from "../services/activity.js";
 
 const router = Router({ mergeParams: true });
 
@@ -28,6 +29,15 @@ router.post("/new", requireCampaignRole("gm", "admin"), async (req, res) => {
     return res.redirect(`/campaigns/${res.locals.campaign.slug}/npcs/new`);
   }
   const npc = await createNpc(res.locals.campaign.id, name, req.session.userId!, description);
+  void logActivity({
+    campaignId: res.locals.campaign.id,
+    actorId: req.session.userId!,
+    actionType: "npc.created",
+    entityType: "npc",
+    entityId: npc.id,
+    metadata: { name: npc.name },
+    gmOnly: true,
+  });
   req.session.flash = { success: `NPC "${npc.name}" created.` };
   res.redirect(`/campaigns/${res.locals.campaign.slug}/npcs/${npc.id}`);
 });
@@ -122,6 +132,15 @@ router.post(
       return res.status(404).render("pages/error.njk", { status: "404", message: "NPC not found." });
     }
     await archiveNpc(npc.id);
+    void logActivity({
+      campaignId: res.locals.campaign.id,
+      actorId: req.session.userId!,
+      actionType: "npc.archived",
+      entityType: "npc",
+      entityId: npc.id,
+      metadata: { name: npc.name },
+      gmOnly: true,
+    });
     req.session.flash = { success: `"${npc.name}" has been archived.` };
     res.redirect(`/campaigns/${res.locals.campaign.slug}/npcs`);
   }
