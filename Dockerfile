@@ -9,6 +9,7 @@ RUN npm ci
 COPY tsconfig.json ./
 COPY src ./src
 COPY public ./public
+COPY views ./views
 
 # Build TypeScript and Tailwind CSS
 RUN npm run build
