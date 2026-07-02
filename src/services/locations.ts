@@ -13,7 +13,8 @@ async function uniqueLocationSlug(
   campaignId: string,
   base: string
 ): Promise<string> {
-  let slug = base || "untitled";
+  const safeBase = base || "untitled";
+  let slug = safeBase;
   let i = 2;
   while (true) {
     const existing = await db.query.locations.findFirst({
@@ -24,7 +25,7 @@ async function uniqueLocationSlug(
       columns: { id: true },
     });
     if (!existing) return slug;
-    slug = `${base}-${i++}`;
+    slug = `${safeBase}-${i++}`;
   }
 }
 

@@ -15,5 +15,21 @@ services:
       timeout: 5s
       retries: 5
 
+  test-db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: marches_test
+      POSTGRES_USER: marches
+      POSTGRES_PASSWORD: dev_password
+    ports:
+      - "5433:5432"
+    tmpfs:
+      - /var/lib/postgresql/data  # in-memory: fast, no state persisted
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U marches -d marches_test"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
 volumes:
   postgres_data:

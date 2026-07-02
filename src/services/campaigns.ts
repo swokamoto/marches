@@ -6,7 +6,8 @@ import { slugify } from "../utils/slugify.js";
 // ─── Slug ─────────────────────────────────────────────────────────────────────
 
 async function uniqueSlug(base: string): Promise<string> {
-  let slug = base || "untitled";
+  const safeBase = base || "untitled";
+  let slug = safeBase;
   let i = 2;
   while (true) {
     const existing = await db.query.campaigns.findFirst({
@@ -14,7 +15,7 @@ async function uniqueSlug(base: string): Promise<string> {
       columns: { id: true },
     });
     if (!existing) return slug;
-    slug = `${base}-${i++}`;
+    slug = `${safeBase}-${i++}`;
   }
 }
 
