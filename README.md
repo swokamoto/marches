@@ -4,6 +4,8 @@ A web app for running **West Marches** tabletop RPG campaigns — the kind where
 
 Built as a full-stack portfolio project using Node.js, TypeScript, PostgreSQL, and server-rendered HTML.
 
+**[Live demo →](https://marches.fly.dev)**
+
 ---
 
 ## Background
@@ -48,6 +50,22 @@ Keeping track of all that across multiple game masters and dozens of players, us
 | **Deployment** | Docker, Fly.io |
 
 There's no React or other frontend framework. Pages are rendered on the server and sent as HTML. HTMX handles the small interactive bits — loading journal entries inline, swapping status badges without a full page reload — without needing a separate API layer.
+
+---
+
+## Technical highlights
+
+**Conflict detection** — Before a GM commits to an expedition, the app queries all scheduled and active expeditions in the same campaign and checks for overlapping targets (locations, NPCs, artifacts). Conflicts surface as warnings so GMs can coordinate before anyone shows up to a location someone else is already running.
+
+**Role-based access control** — Every request goes through middleware that resolves the current user's campaign membership (admin / GM / player / observer). Route handlers and templates use this to gate actions: players can't create locations or NPCs, only GMs can publish session reports, only admins can change campaign settings.
+
+**Visibility system** — GMs create entities (locations, NPCs, artifacts) that are hidden from players until explicitly revealed. The activity feed filters based on role, so players don't see events that would spoil unrevealed content.
+
+**Auth and security** — Session-based login with bcrypt password hashing, CSRF token validation on all state-changing requests, and rate limiting on auth endpoints.
+
+**Integration tests against a real database** — The service layer has integration tests that spin up a dedicated PostgreSQL container, run migrations, and execute queries against actual data. No mocks. This catches things like constraint violations and query edge cases that in-memory stubs miss.
+
+**Data model** — 22 tables, 8 enums, and a self-referential location hierarchy (locations can be nested arbitrarily deep) managed through Drizzle ORM with a typed schema.
 
 ---
 
@@ -126,6 +144,12 @@ fly deploy
 ```
 
 The Docker build compiles TypeScript, bundles CSS, and produces a lean production image. Database migrations run automatically when the container starts.
+
+---
+
+## About
+
+Built by [Scott Okamoto](https://scott-portfolio-azure.vercel.app/) — [GitHub](https://github.com/swokamoto) · [LinkedIn](https://www.linkedin.com/in/sokamoto/)
 
 ---
 
