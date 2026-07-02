@@ -94,7 +94,7 @@ router.get("/:expeditionId", async (req, res) => {
   const expedition = await getExpeditionById(req.params.expeditionId as string);
 
   if (!expedition || expedition.campaignId !== res.locals.campaign.id) {
-    return res.status(404).render("pages/error.njk", { message: "Expedition not found." });
+    return res.status(404).render("pages/error.njk", { status: "404", message: "Expedition not found." });
   }
 
   const playerCharacters = await getPlayerCharactersForCampaign(
@@ -132,7 +132,7 @@ router.post(
   async (req, res) => {
     const expedition = await getExpeditionById(req.params.expeditionId as string);
     if (!expedition || expedition.campaignId !== res.locals.campaign.id) {
-      return res.status(404).render("pages/error.njk", { message: "Expedition not found." });
+      return res.status(404).render("pages/error.njk", { status: "404", message: "Expedition not found." });
     }
 
     const next = STATUS_PIPELINE[expedition.status];
@@ -170,7 +170,7 @@ router.post(
   async (req, res) => {
     const expedition = await getExpeditionById(req.params.expeditionId as string);
     if (!expedition || expedition.campaignId !== res.locals.campaign.id) {
-      return res.status(404).render("pages/error.njk", { message: "Expedition not found." });
+      return res.status(404).render("pages/error.njk", { status: "404", message: "Expedition not found." });
     }
 
     await updateExpeditionStatus(expedition.id, "cancelled");
@@ -256,7 +256,7 @@ router.post("/:expeditionId/join", async (req, res) => {
   const owns = characters.some((c) => c.id === characterId);
 
   if (!owns) {
-    return res.status(403).render("pages/error.njk", { message: "Character not found." });
+    return res.status(403).render("pages/error.njk", { status: "403", message: "Character not found." });
   }
 
   await addExpeditionParticipant(req.params.expeditionId as string, characterId);
@@ -280,7 +280,7 @@ router.post("/:expeditionId/leave", async (req, res) => {
   const isGm = ["gm", "admin"].includes(res.locals.member.role);
 
   if (!owns && !isGm) {
-    return res.status(403).render("pages/error.njk", { message: "Permission denied." });
+    return res.status(403).render("pages/error.njk", { status: "403", message: "Permission denied." });
   }
 
   await removeExpeditionParticipant(req.params.expeditionId as string, characterId);
@@ -300,7 +300,7 @@ router.post(
 
     const expedition = await getExpeditionById(expeditionId);
     if (!expedition || expedition.campaignId !== res.locals.campaign.id) {
-      return res.status(404).render("pages/error.njk", { message: "Expedition not found." });
+      return res.status(404).render("pages/error.njk", { status: "404", message: "Expedition not found." });
     }
 
     const session = await createSession({

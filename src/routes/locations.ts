@@ -103,6 +103,7 @@ router.post(
 
     if (!location) {
       return res.status(404).render("pages/error.njk", {
+        status: "404",
         message: "Location not found.",
       });
     }

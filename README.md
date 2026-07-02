@@ -74,7 +74,7 @@ cd marches
 npm install
 
 # Start the database
-docker compose up -d
+docker compose up db -d
 
 # Set up environment variables
 cp .env.example .env
@@ -88,6 +88,21 @@ npm run dev
 ```
 
 The app will be running at `http://localhost:3000`.
+
+---
+
+## Testing
+
+```bash
+# Unit tests (no database required)
+npm test
+
+# Integration tests (requires Docker)
+docker compose up test-db -d
+npm run test:integration
+```
+
+Unit tests cover pure utility functions (`slugify`, `calcCampaignDay`) and route input validation rules. Integration tests run against a real PostgreSQL instance (`marches_test` on port 5433) and cover the auth, campaign, and location service layers end-to-end.
 
 ---
 

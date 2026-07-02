@@ -42,7 +42,7 @@ router.get("/search", async (req, res) => {
 router.get("/:artifactId", async (req, res) => {
   const artifact = await getArtifactById(req.params.artifactId);
   if (!artifact || artifact.campaignId !== res.locals.campaign.id) {
-    return res.status(404).render("pages/error.njk", { message: "Artifact not found." });
+    return res.status(404).render("pages/error.njk", { status: "404", message: "Artifact not found." });
   }
   const campaignLocations = await getLocations(res.locals.campaign.id);
   const isGm = ["gm", "admin"].includes(res.locals.member.role);
@@ -77,7 +77,7 @@ router.post(
     const artifactId = Array.isArray(req.params.artifactId) ? req.params.artifactId[0] : req.params.artifactId;
     const artifact = await getArtifactById(artifactId);
     if (!artifact || artifact.campaignId !== res.locals.campaign.id) {
-      return res.status(404).render("pages/error.njk", { message: "Artifact not found." });
+      return res.status(404).render("pages/error.njk", { status: "404", message: "Artifact not found." });
     }
 
     const { status } = req.body as { status: string };
@@ -103,7 +103,7 @@ router.post(
     const artifactId = Array.isArray(req.params.artifactId) ? req.params.artifactId[0] : req.params.artifactId;
     const artifact = await getArtifactById(artifactId);
     if (!artifact || artifact.campaignId !== res.locals.campaign.id) {
-      return res.status(404).render("pages/error.njk", { message: "Artifact not found." });
+      return res.status(404).render("pages/error.njk", { status: "404", message: "Artifact not found." });
     }
     const { location_id } = req.body as { location_id: string };
     await updateArtifactLocation(artifact.id, location_id || null);
@@ -119,7 +119,7 @@ router.post(
     const artifactId = Array.isArray(req.params.artifactId) ? req.params.artifactId[0] : req.params.artifactId;
     const artifact = await getArtifactById(artifactId);
     if (!artifact || artifact.campaignId !== res.locals.campaign.id) {
-      return res.status(404).render("pages/error.njk", { message: "Artifact not found." });
+      return res.status(404).render("pages/error.njk", { status: "404", message: "Artifact not found." });
     }
     await archiveArtifact(artifact.id);
     req.session.flash = { success: `"${artifact.name}" has been archived.` };

@@ -46,7 +46,7 @@ router.get("/:sessionId", async (req, res) => {
   const session = await getSessionById(req.params.sessionId as string);
 
   if (!session || session.campaignId !== res.locals.campaign.id) {
-    return res.status(404).render("pages/error.njk", { message: "Session not found." });
+    return res.status(404).render("pages/error.njk", { status: "404", message: "Session not found." });
   }
 
   const isGm = ["gm", "admin"].includes(res.locals.member.role);
@@ -56,6 +56,7 @@ router.get("/:sessionId", async (req, res) => {
   // Participants see the report once published, plus their own note form
   if (!isGm && !isParticipant) {
     return res.status(403).render("pages/error.njk", {
+      status: "403",
       message: "You were not part of this session.",
     });
   }
@@ -95,7 +96,7 @@ router.post(
   async (req, res) => {
     const session = await getSessionById(req.params.sessionId as string);
     if (!session || session.campaignId !== res.locals.campaign.id) {
-      return res.status(404).render("pages/error.njk", { message: "Session not found." });
+      return res.status(404).render("pages/error.njk", { status: "404", message: "Session not found." });
     }
 
     await getOrCreateReport(session.id, req.session.userId!);
@@ -111,7 +112,7 @@ router.post(
   async (req, res) => {
     const session = await getSessionById(req.params.sessionId as string);
     if (!session || session.campaignId !== res.locals.campaign.id) {
-      return res.status(404).render("pages/error.njk", { message: "Session not found." });
+      return res.status(404).render("pages/error.njk", { status: "404", message: "Session not found." });
     }
 
     const report = await getOrCreateReport(session.id, req.session.userId!);
@@ -165,7 +166,7 @@ router.post(
   async (req, res) => {
     const session = await getSessionById(req.params.sessionId as string);
     if (!session || session.campaignId !== res.locals.campaign.id) {
-      return res.status(404).render("pages/error.njk", { message: "Session not found." });
+      return res.status(404).render("pages/error.njk", { status: "404", message: "Session not found." });
     }
 
     if (!session.report) {
@@ -190,7 +191,7 @@ router.get(
   async (req, res) => {
     const session = await getSessionById(req.params.sessionId as string);
     if (!session || session.campaignId !== res.locals.campaign.id) {
-      return res.status(404).render("pages/error.njk", { message: "Session not found." });
+      return res.status(404).render("pages/error.njk", { status: "404", message: "Session not found." });
     }
 
     res.render("pages/sessions/publish-confirm.njk", {
@@ -206,7 +207,7 @@ router.post(
   async (req, res) => {
     const session = await getSessionById(req.params.sessionId as string);
     if (!session || session.campaignId !== res.locals.campaign.id) {
-      return res.status(404).render("pages/error.njk", { message: "Session not found." });
+      return res.status(404).render("pages/error.njk", { status: "404", message: "Session not found." });
     }
 
     if (!session.report) {
@@ -246,12 +247,13 @@ router.post(
 router.post("/:sessionId/notes", async (req, res) => {
   const session = await getSessionById(req.params.sessionId as string);
   if (!session || session.campaignId !== res.locals.campaign.id) {
-    return res.status(404).render("pages/error.njk", { message: "Session not found." });
+    return res.status(404).render("pages/error.njk", { status: "404", message: "Session not found." });
   }
 
   const participant = await isSessionParticipant(session.id, req.session.userId!);
   if (!participant) {
     return res.status(403).render("pages/error.njk", {
+      status: "403",
       message: "Only session participants can submit notes.",
     });
   }

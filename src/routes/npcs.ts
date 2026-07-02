@@ -42,7 +42,7 @@ router.get("/search", async (req, res) => {
 router.get("/:npcId", async (req, res) => {
   const npc = await getNpcById(req.params.npcId);
   if (!npc || npc.campaignId !== res.locals.campaign.id) {
-    return res.status(404).render("pages/error.njk", { message: "NPC not found." });
+    return res.status(404).render("pages/error.njk", { status: "404", message: "NPC not found." });
   }
   const campaignLocations = await getLocations(res.locals.campaign.id);
   const isGm = ["gm", "admin"].includes(res.locals.member.role);
@@ -77,7 +77,7 @@ router.post(
     const npcId = Array.isArray(req.params.npcId) ? req.params.npcId[0] : req.params.npcId;
     const npc = await getNpcById(npcId);
     if (!npc || npc.campaignId !== res.locals.campaign.id) {
-      return res.status(404).render("pages/error.njk", { message: "NPC not found." });
+      return res.status(404).render("pages/error.njk", { status: "404", message: "NPC not found." });
     }
 
     const { status } = req.body as { status: string };
@@ -103,7 +103,7 @@ router.post(
     const npcId = Array.isArray(req.params.npcId) ? req.params.npcId[0] : req.params.npcId;
     const npc = await getNpcById(npcId);
     if (!npc || npc.campaignId !== res.locals.campaign.id) {
-      return res.status(404).render("pages/error.njk", { message: "NPC not found." });
+      return res.status(404).render("pages/error.njk", { status: "404", message: "NPC not found." });
     }
     const { location_id } = req.body as { location_id: string };
     await updateNpcLocation(npc.id, location_id || null);
@@ -119,7 +119,7 @@ router.post(
     const npcId = Array.isArray(req.params.npcId) ? req.params.npcId[0] : req.params.npcId;
     const npc = await getNpcById(npcId);
     if (!npc || npc.campaignId !== res.locals.campaign.id) {
-      return res.status(404).render("pages/error.njk", { message: "NPC not found." });
+      return res.status(404).render("pages/error.njk", { status: "404", message: "NPC not found." });
     }
     await archiveNpc(npc.id);
     req.session.flash = { success: `"${npc.name}" has been archived.` };

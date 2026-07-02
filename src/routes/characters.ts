@@ -79,7 +79,7 @@ router.get("/:characterId", async (req, res) => {
 
   const character = await getCharacterById(characterId);
   if (!character || character.campaignId !== res.locals.campaign.id) {
-    return res.status(404).render("pages/error.njk", { message: "Character not found." });
+    return res.status(404).render("pages/error.njk", { status: "404", message: "Character not found." });
   }
 
   const isGm = ["gm", "admin"].includes(res.locals.member.role);
@@ -87,6 +87,7 @@ router.get("/:characterId", async (req, res) => {
 
   if (!isGm && !isOwner) {
     return res.status(403).render("pages/error.njk", {
+      status: "403",
       message: "You don't have access to this character.",
     });
   }
@@ -108,7 +109,7 @@ router.get("/:characterId/edit", async (req, res) => {
 
   const character = await getCharacterById(characterId);
   if (!character || character.campaignId !== res.locals.campaign.id) {
-    return res.status(404).render("pages/error.njk", { message: "Character not found." });
+    return res.status(404).render("pages/error.njk", { status: "404", message: "Character not found." });
   }
 
   const isGm = ["gm", "admin"].includes(res.locals.member.role);
@@ -116,6 +117,7 @@ router.get("/:characterId/edit", async (req, res) => {
 
   if (!isGm && !isOwner) {
     return res.status(403).render("pages/error.njk", {
+      status: "403",
       message: "You can only edit your own characters.",
     });
   }
@@ -133,7 +135,7 @@ router.post("/:characterId/edit", async (req, res) => {
 
   const character = await getCharacterById(characterId);
   if (!character || character.campaignId !== res.locals.campaign.id) {
-    return res.status(404).render("pages/error.njk", { message: "Character not found." });
+    return res.status(404).render("pages/error.njk", { status: "404", message: "Character not found." });
   }
 
   const isGm = ["gm", "admin"].includes(res.locals.member.role);
@@ -141,6 +143,7 @@ router.post("/:characterId/edit", async (req, res) => {
 
   if (!isGm && !isOwner) {
     return res.status(403).render("pages/error.njk", {
+      status: "403",
       message: "You can only edit your own characters.",
     });
   }
@@ -174,7 +177,7 @@ router.post(
 
     const character = await getCharacterById(characterId);
     if (!character || character.campaignId !== res.locals.campaign.id) {
-      return res.status(404).render("pages/error.njk", { message: "Character not found." });
+      return res.status(404).render("pages/error.njk", { status: "404", message: "Character not found." });
     }
 
     const { status } = req.body as { status: string };
@@ -202,12 +205,12 @@ router.post("/:characterId/archive", async (req, res) => {
     : req.params.characterId;
   const character = await getCharacterById(characterId);
   if (!character || character.campaignId !== res.locals.campaign.id) {
-    return res.status(404).render("pages/error.njk", { message: "Character not found." });
+    return res.status(404).render("pages/error.njk", { status: "404", message: "Character not found." });
   }
   const isGm = ["gm", "admin"].includes(res.locals.member.role);
   const isOwner = character.playerId === req.session.userId;
   if (!isGm && !isOwner) {
-    return res.status(403).render("pages/error.njk", { status: 403, message: "Not authorised." });
+    return res.status(403).render("pages/error.njk", { status: "403", message: "Not authorised." });
   }
   await archiveCharacter(character.id);
   req.session.flash = { success: `"${character.name}" has been archived.` };
