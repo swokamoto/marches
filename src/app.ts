@@ -12,6 +12,9 @@ import accountRouter from "./routes/account.js";
 
 const app = express();
 
+// Trust Fly.io's proxy so secure cookies work over HTTPS
+app.set("trust proxy", 1);
+
 // ─── Rate limiting ────────────────────────────────────────────────────────────
 
 const authLimiter = rateLimit({
