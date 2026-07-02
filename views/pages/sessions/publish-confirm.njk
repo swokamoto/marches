@@ -38,6 +38,7 @@
 
   <div class="flex gap-3">
     <form method="POST" action="/campaigns/{{ campaign.slug }}/sessions/{{ session.id }}/publish">
+      {% include "partials/csrf.njk" %}
       <button type="submit"
               class="px-5 py-2 bg-stone-100 text-stone-900 font-medium rounded hover:bg-white transition-colors">
         Confirm Publish

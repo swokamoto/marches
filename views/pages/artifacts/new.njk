@@ -4,6 +4,7 @@
   <h1 class="text-2xl font-semibold text-stone-100 mb-1">New Artifact</h1>
   <p class="text-stone-500 text-sm mb-8">Add an object of significance to the world.</p>
   <form method="POST" action="/campaigns/{{ campaign.slug }}/artifacts/new" class="space-y-5">
+    {% include "partials/csrf.njk" %}
     <div>
       <label for="name" class="block text-sm text-stone-400 mb-1">Name</label>
       <input type="text" id="name" name="name" required placeholder="The Chief's Map"

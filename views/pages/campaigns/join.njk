@@ -6,6 +6,7 @@
   <p class="text-stone-500 text-sm text-center mb-8">Enter the invite code from your GM.</p>
 
   <form method="POST" action="/campaigns/join" class="space-y-4">
+    {% include "partials/csrf.njk" %}
     <input type="text" name="code" required autofocus
            maxlength="8"
            placeholder="A3F7C2B1"

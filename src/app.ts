@@ -5,6 +5,7 @@ import { configureTemplates } from "./templates.js";
 import { sessionMiddleware } from "./middleware/session.js";
 import { flashMiddleware, loadUser } from "./middleware/locals.js";
 import { requireAuth } from "./middleware/auth.js";
+import { csrfTokenMiddleware, csrfProtectionMiddleware } from "./middleware/csrf.js";
 import authRouter from "./routes/auth.js";
 import campaignsRouter from "./routes/campaigns.js";
 import accountRouter from "./routes/account.js";
@@ -31,6 +32,8 @@ app.use(express.static("public"));
 // ─── Session + locals ─────────────────────────────────────────────────────────
 
 app.use(sessionMiddleware);
+app.use(csrfTokenMiddleware);
+app.use(csrfProtectionMiddleware);
 app.use(flashMiddleware);
 app.use(loadUser);
 

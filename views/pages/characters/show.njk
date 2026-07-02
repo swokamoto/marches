@@ -46,6 +46,7 @@
 
     <form method="POST" action="/campaigns/{{ campaign.slug }}/characters/{{ character.id }}/archive"
           onsubmit="return confirm('Archive {{ character.name }}? They will be hidden from all lists.')">
+            {% include "partials/csrf.njk" %}
       <button type="submit" class="px-3 py-1.5 text-sm border border-stone-800 text-stone-600 rounded hover:border-red-800 hover:text-red-500 transition-colors">Archive</button>
     </form>
   </div>
@@ -53,6 +54,7 @@
   <div class="mb-8">
     <form method="POST" action="/campaigns/{{ campaign.slug }}/characters/{{ character.id }}/archive"
           onsubmit="return confirm('Archive {{ character.name }}? They will be hidden from all lists.')">
+            {% include "partials/csrf.njk" %}
       <button type="submit" class="px-3 py-1.5 text-sm border border-stone-800 text-stone-600 rounded hover:border-red-800 hover:text-red-500 transition-colors">Archive character</button>
     </form>
   </div>

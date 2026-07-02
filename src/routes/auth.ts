@@ -18,26 +18,40 @@ router.post("/register", requireGuest, async (req, res, next) => {
     confirmPassword: string;
   };
 
+  const formData = { email: email?.trim() ?? "", displayName: displayName?.trim() ?? "" };
+
   if (!email || !displayName || !password) {
-    req.session.flash = { error: "All fields are required." };
-    return res.redirect("/auth/register");
+    return res.render("pages/auth/register.njk", {
+      title: "Create account",
+      error: "All fields are required.",
+      formData,
+    });
   }
 
   if (password.length < 8) {
-    req.session.flash = { error: "Password must be at least 8 characters." };
-    return res.redirect("/auth/register");
+    return res.render("pages/auth/register.njk", {
+      title: "Create account",
+      error: "Password must be at least 8 characters.",
+      formData,
+    });
   }
 
   if (password !== confirmPassword) {
-    req.session.flash = { error: "Passwords do not match." };
-    return res.redirect("/auth/register");
+    return res.render("pages/auth/register.njk", {
+      title: "Create account",
+      error: "Passwords do not match.",
+      formData,
+    });
   }
 
   const result = await registerUser(email, displayName, password);
 
   if ("error" in result) {
-    req.session.flash = { error: "An account with that email already exists." };
-    return res.redirect("/auth/register");
+    return res.render("pages/auth/register.njk", {
+      title: "Create account",
+      error: "An account with that email already exists.",
+      formData,
+    });
   }
 
   req.session.regenerate((err) => {

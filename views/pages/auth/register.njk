@@ -4,7 +4,12 @@
 <div class="max-w-sm mx-auto mt-16">
   <h1 class="text-2xl font-semibold text-stone-100 mb-6">Create account</h1>
 
+  {% if error %}
+    <p class="text-red-400 text-sm mb-4">{{ error }}</p>
+  {% endif %}
+
   <form method="POST" action="/auth/register" class="space-y-4">
+    {% include "partials/csrf.njk" %}
 
     <div>
       <label for="displayName" class="block text-sm text-stone-400 mb-1">Display name</label>
@@ -14,6 +19,7 @@
         name="displayName"
         required
         autocomplete="nickname"
+        value="{{ formData.displayName or '' }}"
         class="w-full bg-stone-900 border border-stone-700 rounded px-3 py-2 text-stone-100
                focus:outline-none focus:border-stone-500 transition-colors"
       />
@@ -27,6 +33,7 @@
         name="email"
         required
         autocomplete="email"
+        value="{{ formData.email or '' }}"
         class="w-full bg-stone-900 border border-stone-700 rounded px-3 py-2 text-stone-100
                focus:outline-none focus:border-stone-500 transition-colors"
       />

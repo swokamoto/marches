@@ -8,6 +8,7 @@
   <h1 class="text-2xl font-semibold text-stone-100 mb-6">Campaign Settings</h1>
 
   <form method="POST" action="/campaigns/{{ campaign.slug }}/settings" class="space-y-5">
+    {% include "partials/csrf.njk" %}
 
     <div>
       <label class="block text-sm text-stone-400 mb-1.5" for="name">Campaign name</label>

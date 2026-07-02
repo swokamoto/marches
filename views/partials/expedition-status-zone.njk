@@ -14,6 +14,7 @@
       </form>
     {% endif %}
     <form method="POST" action="/campaigns/{{ campaign.slug }}/expeditions/{{ expedition.id }}/cancel">
+      {% include "partials/csrf.njk" %}
       <button type="submit"
               onclick="return confirm('Cancel this expedition?')"
               class="px-3 py-1.5 text-sm text-red-700 hover:text-red-500 transition-colors">
@@ -28,6 +29,7 @@
     <form method="POST"
           action="/campaigns/{{ campaign.slug }}/expeditions/{{ expedition.id }}/sessions/create"
           class="flex items-center gap-3">
+            {% include "partials/csrf.njk" %}
       <input type="number" name="campaign_day" value="{{ currentCampaignDay }}" min="1"
              class="w-36 bg-stone-900 border border-stone-700 rounded px-3 py-1.5 text-sm text-stone-300 focus:outline-none focus:border-stone-500"/>
       <button type="submit"

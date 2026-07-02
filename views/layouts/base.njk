@@ -15,7 +15,8 @@
     .htmx-request [type="submit"] { pointer-events: none; opacity: 0.5; }
   </style>
 </head>
-<body class="bg-stone-950 text-stone-100 min-h-screen">
+<body class="bg-stone-950 text-stone-100 min-h-screen"
+      hx-headers='{"X-CSRF-Token": "{{ csrfToken }}"}'>
 
   {# ── Top navigation ── #}
   <header class="border-b border-stone-800 bg-stone-900">

@@ -7,6 +7,7 @@
   <section class="mb-10">
     <h2 class="text-xs font-semibold text-stone-500 uppercase tracking-widest mb-4">Profile</h2>
     <form method="POST" action="/account" class="space-y-4">
+      {% include "partials/csrf.njk" %}
       <div>
         <label for="displayName" class="block text-sm text-stone-400 mb-1">Display name</label>
         <input
@@ -31,6 +32,7 @@
   <section class="border-t border-stone-800 pt-8">
     <h2 class="text-xs font-semibold text-stone-500 uppercase tracking-widest mb-4">Change Password</h2>
     <form method="POST" action="/account/password" class="space-y-4">
+      {% include "partials/csrf.njk" %}
       <div>
         <label for="currentPassword" class="block text-sm text-stone-400 mb-1">Current password</label>
         <input

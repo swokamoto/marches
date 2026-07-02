@@ -7,6 +7,7 @@
   </p>
 
   <form method="POST" action="/campaigns/{{ campaign.slug }}/expeditions/new" class="space-y-5">
+    {% include "partials/csrf.njk" %}
 
     <div>
       <label for="title" class="block text-sm text-stone-400 mb-1">Title</label>

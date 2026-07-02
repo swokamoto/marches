@@ -53,6 +53,7 @@
 
     {% if not session.report %}
       <form method="POST" action="/campaigns/{{ campaign.slug }}/sessions/{{ session.id }}/report/open">
+        {% include "partials/csrf.njk" %}
         <button type="submit"
                 class="px-4 py-2 text-sm border border-stone-700 text-stone-400 rounded hover:border-stone-500 transition-colors">
           Open report to add world changes
@@ -106,6 +107,7 @@
       {% else %}
         <form method="POST" action="/campaigns/{{ campaign.slug }}/sessions/{{ session.id }}/notes"
               class="space-y-3 mt-4 max-w-lg">
+                {% include "partials/csrf.njk" %}
           <p class="text-stone-400 text-sm italic">
             What was most interesting, surprising, or unresolved for your character this session?
           </p>
@@ -127,6 +129,7 @@
     {% if isGm and session.status === 'awaiting_notes' %}
       <form method="POST" action="/campaigns/{{ campaign.slug }}/sessions/{{ session.id }}/close"
             class="mt-6">
+              {% include "partials/csrf.njk" %}
         <button type="submit"
                 onclick="return confirm('Close session manually? Not all players have submitted notes.')"
                 class="px-4 py-2 text-sm border border-stone-700 text-stone-400 rounded hover:border-stone-500 transition-colors">

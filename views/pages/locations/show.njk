@@ -53,6 +53,7 @@
       <span class="text-sm text-stone-500">Part of:</span>
       <form method="POST" action="/campaigns/{{ campaign.slug }}/locations/{{ location.slug }}/parent"
             class="flex items-center gap-2">
+              {% include "partials/csrf.njk" %}
         <select name="parent_location_id"
                 class="bg-stone-900 border border-stone-700 rounded px-3 py-1.5 text-sm text-stone-300
                        focus:outline-none focus:border-stone-500">
@@ -72,6 +73,7 @@
 
     <form method="POST" action="/campaigns/{{ campaign.slug }}/locations/{{ location.slug }}/archive"
           onsubmit="return confirm('Archive {{ location.name }}? It will be hidden from all lists.')">
+            {% include "partials/csrf.njk" %}
       <button type="submit" class="px-3 py-1.5 text-sm border border-stone-800 text-stone-600 rounded hover:border-red-800 hover:text-red-500 transition-colors">Archive</button>
     </form>
   </div>

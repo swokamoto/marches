@@ -8,6 +8,7 @@
   </p>
 
   <form method="POST" action="/campaigns/{{ campaign.slug }}/locations/new" class="space-y-5">
+    {% include "partials/csrf.njk" %}
 
     <div>
       <label for="name" class="block text-sm text-stone-400 mb-1">Name</label>

@@ -32,6 +32,7 @@
       <span class="text-sm text-stone-500">Location:</span>
       <form method="POST" action="/campaigns/{{ campaign.slug }}/npcs/{{ npc.id }}/location"
             class="flex items-center gap-2">
+              {% include "partials/csrf.njk" %}
         <select name="location_id"
                 class="bg-stone-900 border border-stone-700 rounded px-3 py-1.5 text-sm text-stone-300 focus:outline-none focus:border-stone-500">
           <option value="">— None —</option>
@@ -45,6 +46,7 @@
 
     <form method="POST" action="/campaigns/{{ campaign.slug }}/npcs/{{ npc.id }}/archive"
           onsubmit="return confirm('Archive {{ npc.name }}? They will be hidden from all lists.')">
+            {% include "partials/csrf.njk" %}
       <button type="submit" class="px-3 py-1.5 text-sm border border-stone-800 text-stone-600 rounded hover:border-red-800 hover:text-red-500 transition-colors">Archive</button>
     </form>
   </div>
@@ -53,6 +55,7 @@
   <div class="mb-8">
     <form method="POST" action="/campaigns/{{ campaign.slug }}/npcs/{{ npc.id }}/description"
           class="flex items-end gap-2">
+            {% include "partials/csrf.njk" %}
       <div class="flex-1">
         <label class="block text-xs text-stone-600 mb-1">Brief description</label>
         <input type="text" name="description" value="{{ npc.description or '' }}"

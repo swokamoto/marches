@@ -6,6 +6,7 @@
   <p class="text-stone-500 text-sm mb-8">You will be the administrator of this campaign.</p>
 
   <form method="POST" action="/campaigns/new" class="space-y-5">
+    {% include "partials/csrf.njk" %}
 
     <div>
       <label for="name" class="block text-sm text-stone-400 mb-1">Campaign name</label>

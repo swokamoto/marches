@@ -6,6 +6,7 @@
 
   <form method="POST" action="/campaigns/{{ campaign.slug }}/characters/{{ character.id }}/edit"
         class="space-y-5">
+          {% include "partials/csrf.njk" %}
 
     <div>
       <label class="block text-sm text-stone-400 mb-1.5" for="name">Name</label>

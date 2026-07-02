@@ -38,6 +38,7 @@
             <form method="POST"
                   action="/campaigns/{{ campaign.slug }}/members/{{ m.user.id }}/role"
                   class="flex items-center gap-2">
+                    {% include "partials/csrf.njk" %}
               <select name="role"
                       class="bg-stone-950 border border-stone-700 rounded px-2 py-1 text-xs text-stone-300 focus:outline-none focus:border-stone-500">
                 {% for r in ['gm', 'player', 'observer'] %}
@@ -54,6 +55,7 @@
             <form method="POST"
                   action="/campaigns/{{ campaign.slug }}/members/{{ m.user.id }}/remove"
                   onsubmit="return confirm('Remove {{ m.user.displayName }} from the campaign?')">
+                    {% include "partials/csrf.njk" %}
               <button type="submit" class="text-xs text-stone-700 hover:text-red-500 transition-colors">
                 Remove
               </button>
