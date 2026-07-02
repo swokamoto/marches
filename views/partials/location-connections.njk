@@ -1,5 +1,6 @@
 {# Location connections panel — HTMX partial #}
 {# Expects: location (with connectionsFrom), allLocations, member (from res.locals) #}
+{# Optional: connectionError (string) — shown as an inline error above the add form #}
 
 <div class="space-y-2 mb-4">
   {% if location.connectionsFrom.length === 0 %}
@@ -32,6 +33,9 @@
 </div>
 
 {% if member.role in ['gm', 'admin'] %}
+  {% if connectionError %}
+    <p class="text-red-500 text-xs mb-2">{{ connectionError }}</p>
+  {% endif %}
   <form
     hx-post="/campaigns/{{ campaign.slug }}/locations/{{ location.slug }}/connections/add"
     hx-target="#connections-section"

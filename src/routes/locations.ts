@@ -182,13 +182,24 @@ router.post(
 
     // Validate destination belongs to the campaign
     const allLocations = await getLocations(res.locals.campaign.id);
-    if (!allLocations.some((l) => l.id === to_location_id)) {
-      return res.status(400).render("pages/error.njk", { status: "400", message: "Invalid destination location." });
+
+    const errorHtml = (msg: string) =>
+      res.status(400).render("partials/location-connections.njk", {
+        location,
+        allLocations,
+        connectionError: msg,
+      });
+
+    if (!to_location_id) {
+      return errorHtml("Please select a destination location.");
     }
 
     if (to_location_id === location.id) {
-      req.session.flash = { error: "A location cannot connect to itself." };
-      return res.redirect(`/campaigns/${res.locals.campaign.slug}/locations/${location.slug}`);
+      return errorHtml("A location cannot connect to itself.");
+    }
+
+    if (!allLocations.some((l) => l.id === to_location_id)) {
+      return errorHtml("Invalid destination location.");
     }
 
     await addLocationConnection(location.id, to_location_id, description);

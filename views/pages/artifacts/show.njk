@@ -75,9 +75,14 @@
   </div>
 {% endif %}
 
-<div id="journal-section"
-     hx-get="/campaigns/{{ campaign.slug }}/journal/artifact/{{ artifact.id }}"
-     hx-trigger="load" hx-swap="outerHTML"
+<div id="journal-section">
+  <div
+    hx-get="/campaigns/{{ campaign.slug }}/journal/artifact/{{ artifact.id }}"
+    hx-trigger="load" hx-swap="outerHTML"
+    hx-on::error="this.innerHTML='<p class=text-red-700 text-sm>Failed to load records.</p>'">
+    <p class="text-stone-600 text-sm htmx-indicator">Loading records...</p>
+  </div>
+</div>
      hx-on::error="this.innerHTML='<p class=text-red-700 text-sm>Failed to load records.</p>'">
   <p class="text-stone-600 text-sm htmx-indicator">Loading records...</p>
 </div>
