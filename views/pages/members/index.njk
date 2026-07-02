@@ -41,7 +41,7 @@
                     {% include "partials/csrf.njk" %}
               <select name="role"
                       class="bg-stone-950 border border-stone-700 rounded px-2 py-1 text-xs text-stone-300 focus:outline-none focus:border-stone-500">
-                {% for r in ['gm', 'player', 'observer'] %}
+                {% for r in validRoles %}
                   <option value="{{ r }}" {% if m.role === r %}selected{% endif %}>{{ r }}</option>
                 {% endfor %}
               </select>

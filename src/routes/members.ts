@@ -6,6 +6,8 @@ import {
   rotateInviteCode,
   updateMemberRole,
   removeMember,
+  getMember,
+  countAdmins,
   VALID_ROLES,
 } from "../services/members.js";
 import type { CampaignMemberRole } from "../services/members.js";
@@ -24,6 +26,7 @@ router.get("/", requireCampaignRole("gm", "admin"), async (_req, res) => {
     title: `Members — ${res.locals.campaign.name}`,
     memberList,
     inviteCode,
+    validRoles: VALID_ROLES,
   });
 });
 
@@ -65,6 +68,16 @@ router.post(
     if (!VALID_ROLES.includes(role as CampaignMemberRole)) {
       req.session.flash = { error: "Invalid role." };
       return res.redirect(`/campaigns/${res.locals.campaign.slug}/members`);
+    }
+
+    // Prevent demoting the last admin
+    const targetMember = await getMember(res.locals.campaign.id, targetUserId);
+    if (targetMember?.role === "admin") {
+      const adminCount = await countAdmins(res.locals.campaign.id);
+      if (adminCount <= 1) {
+        req.session.flash = { error: "Cannot demote the last admin." };
+        return res.redirect(`/campaigns/${res.locals.campaign.slug}/members`);
+      }
     }
 
     await updateMemberRole(

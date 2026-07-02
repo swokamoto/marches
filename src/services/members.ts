@@ -84,6 +84,29 @@ export async function addMember(
   return member;
 }
 
+export async function getMember(
+  campaignId: string,
+  userId: string
+): Promise<CampaignMember | undefined> {
+  return db.query.campaignMembers.findFirst({
+    where: and(
+      eq(campaignMembers.campaignId, campaignId),
+      eq(campaignMembers.userId, userId)
+    ),
+  });
+}
+
+export async function countAdmins(campaignId: string): Promise<number> {
+  const admins = await db.query.campaignMembers.findMany({
+    where: and(
+      eq(campaignMembers.campaignId, campaignId),
+      eq(campaignMembers.role, "admin")
+    ),
+    columns: { id: true },
+  });
+  return admins.length;
+}
+
 export async function updateMemberRole(
   campaignId: string,
   userId: string,
