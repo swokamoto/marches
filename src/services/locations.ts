@@ -2,21 +2,12 @@ import { db } from "../db/index.js";
 import { locations, locationConnections } from "../db/schema.js";
 import { eq, and, isNull, ilike } from "drizzle-orm";
 import type { InferSelectModel } from "drizzle-orm";
+import { slugify } from "../utils/slugify.js";
 
 export type Location = InferSelectModel<typeof locations>;
 export type LocationStatus = Location["status"];
 
 // ─── Slug ─────────────────────────────────────────────────────────────────────
-
-function slugify(name: string): string {
-  return name
-    .toLowerCase()
-    .replace(/[^a-z0-9\s-]/g, "")
-    .replace(/\s+/g, "-")
-    .replace(/-+/g, "-")
-    .trim()
-    .slice(0, 60);
-}
 
 async function uniqueLocationSlug(
   campaignId: string,

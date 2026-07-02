@@ -8,6 +8,9 @@
     "build": "tsc && npx @tailwindcss/cli -i src/styles/app.css -o public/css/app.css --minify && cp -r src/db/migrations dist/db/migrations",
     "start": "node dist/server.js",
     "db:migrate:prod": "node dist/db/migrate.js",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
     "typecheck": "tsc --noEmit",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
@@ -27,12 +30,14 @@
     "@types/node": "^26.0.1",
     "@types/nunjucks": "^3.2.6",
     "@types/pg": "^8.20.0",
+    "@vitest/coverage-v8": "^4.1.9",
     "chokidar": "^3.6.0",
     "concurrently": "^10.0.3",
     "drizzle-kit": "^0.31.10",
     "tailwindcss": "^4.3.1",
     "tsx": "^4.22.4",
-    "typescript": "^6.0.3"
+    "typescript": "^6.0.3",
+    "vitest": "^4.1.9"
   },
   "dependencies": {
     "@types/express-rate-limit": "^5.1.3",

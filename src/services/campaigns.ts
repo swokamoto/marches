@@ -1,18 +1,9 @@
 import { db } from "../db/index.js";
 import { campaigns, campaignMembers } from "../db/schema.js";
 import { eq, and } from "drizzle-orm";
+import { slugify } from "../utils/slugify.js";
 
 // ─── Slug ─────────────────────────────────────────────────────────────────────
-
-function slugify(name: string): string {
-  return name
-    .toLowerCase()
-    .replace(/[^a-z0-9\s-]/g, "")
-    .replace(/\s+/g, "-")
-    .replace(/-+/g, "-")
-    .trim()
-    .slice(0, 60);
-}
 
 async function uniqueSlug(base: string): Promise<string> {
   let slug = base || "untitled";
