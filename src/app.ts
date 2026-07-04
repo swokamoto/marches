@@ -53,8 +53,18 @@ app.get("/", (req, res) => {
   res.render("pages/home.njk", { title: "Welcome" });
 });
 
-app.get("/dashboard", requireAuth, (req, res) => {
-  res.render("pages/dashboard.njk", { title: "Dashboard" });
+import { getUserCampaigns } from "./services/campaigns.js";
+
+app.get("/dashboard", requireAuth, async (req, res) => {
+  const campaigns = await getUserCampaigns(req.session.userId!);
+  if (campaigns.length === 1) {
+    return res.redirect(`/campaigns/${campaigns[0].slug}`);
+  }
+  res.render("pages/dashboard.njk", { title: "Dashboard", campaigns });
+});
+
+app.get("/help", (req, res) => {
+  res.render("pages/help.njk", { title: "Usage Guide" });
 });
 
 // ─── 404 ──────────────────────────────────────────────────────────────────────

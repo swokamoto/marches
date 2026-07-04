@@ -1,0 +1,349 @@
+{% extends "layouts/base.njk" %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto">
+
+  <div class="mb-10">
+    <h1 class="text-3xl font-semibold text-stone-100 mb-2">Usage Guide</h1>
+    <p class="text-stone-400">How to set up and run a West Marches campaign in Marches.</p>
+  </div>
+
+  {# ── TOC ── #}
+  <nav class="mb-12 bg-stone-900 border border-stone-800 rounded p-5 text-sm">
+    <p class="text-stone-500 uppercase tracking-wide text-xs font-medium mb-3">Contents</p>
+    <ol class="space-y-1.5 list-decimal list-inside text-stone-400">
+      <li><a href="#concepts"     class="hover:text-stone-100">Core concepts</a></li>
+      <li><a href="#locations"    class="hover:text-stone-100">Building your world — Locations</a></li>
+      <li><a href="#hierarchy"    class="hover:text-stone-100">Location hierarchy (nesting)</a></li>
+      <li><a href="#connections"  class="hover:text-stone-100">Location connections</a></li>
+      <li><a href="#entities"     class="hover:text-stone-100">NPCs, Factions &amp; Artifacts</a></li>
+      <li><a href="#visibility"   class="hover:text-stone-100">Revealed vs. hidden</a></li>
+      <li><a href="#expeditions"  class="hover:text-stone-100">Expeditions</a></li>
+      <li><a href="#sessions"     class="hover:text-stone-100">Sessions &amp; notes</a></li>
+      <li><a href="#characters"   class="hover:text-stone-100">Characters</a></li>
+      <li><a href="#timeline"     class="hover:text-stone-100">Timeline &amp; activity</a></li>
+    </ol>
+  </nav>
+
+  {# ── Section macro ── #}
+  {% macro section(id, title) %}
+    <section id="{{ id }}" class="mb-12 scroll-mt-8">
+      <h2 class="text-xl font-semibold text-stone-100 mb-4 pb-2 border-b border-stone-800">{{ title }}</h2>
+  {% endmacro %}
+
+  {# ─────────────────────────────────────────── #}
+  {{ section("concepts", "1. Core concepts") }}
+    <p class="text-stone-400 mb-4">
+      Marches is built around three types of people in every campaign:
+    </p>
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
+      <div class="bg-stone-900 border border-stone-800 rounded p-4">
+        <p class="text-stone-200 font-medium mb-1">Admin</p>
+        <p class="text-stone-500 text-sm">Creates the campaign and manages invite codes. Has full GM powers plus campaign settings.</p>
+      </div>
+      <div class="bg-stone-900 border border-stone-800 rounded p-4">
+        <p class="text-stone-200 font-medium mb-1">GM</p>
+        <p class="text-stone-500 text-sm">Builds the world, runs expeditions and sessions, controls what players see.</p>
+      </div>
+      <div class="bg-stone-900 border border-stone-800 rounded p-4">
+        <p class="text-stone-200 font-medium mb-1">Player</p>
+        <p class="text-stone-500 text-sm">Creates characters, joins expeditions, reads revealed lore, submits session notes.</p>
+      </div>
+    </div>
+    <p class="text-stone-500 text-sm">
+      Players join using an invite code from <strong class="text-stone-400">Campaign → Members</strong>.
+      Each player can hold multiple characters across the same campaign.
+    </p>
+  </section>
+
+  {# ─────────────────────────────────────────── #}
+  {{ section("locations", "2. Building your world — Locations") }}
+    <p class="text-stone-400 mb-4">
+      Locations are the backbone of your world map. Each location has a name, description,
+      status, and optional lore that players can read once it's revealed.
+    </p>
+    <p class="text-stone-400 mb-3">Location statuses:</p>
+    <ul class="space-y-2 mb-4 text-sm">
+      <li class="flex items-start gap-3">
+        <span class="inline-block mt-0.5 px-2 py-0.5 rounded border border-stone-600 text-stone-400 text-xs">open</span>
+        <span class="text-stone-500">Accessible and relatively safe. Players can travel here freely.</span>
+      </li>
+      <li class="flex items-start gap-3">
+        <span class="inline-block mt-0.5 px-2 py-0.5 rounded border border-amber-700 text-amber-400 text-xs">active</span>
+        <span class="text-stone-500">Something is happening here — an expedition is underway or a threat is present.</span>
+      </li>
+      <li class="flex items-start gap-3">
+        <span class="inline-block mt-0.5 px-2 py-0.5 rounded border border-stone-600 text-stone-500 text-xs">ruined</span>
+        <span class="text-stone-500">Partially destroyed or abandoned. Accessible but changed.</span>
+      </li>
+      <li class="flex items-start gap-3">
+        <span class="inline-block mt-0.5 px-2 py-0.5 rounded border border-red-900 text-red-600 text-xs">destroyed</span>
+        <span class="text-stone-500">Gone. Use after world-changing events to mark permanent loss.</span>
+      </li>
+      <li class="flex items-start gap-3">
+        <span class="inline-block mt-0.5 px-2 py-0.5 rounded border border-stone-700 text-stone-600 text-xs">unknown</span>
+        <span class="text-stone-500">Existence is rumoured but its nature is a mystery.</span>
+      </li>
+    </ul>
+  </section>
+
+  {# ─────────────────────────────────────────── #}
+  {{ section("hierarchy", "3. Location hierarchy (nesting)") }}
+    <p class="text-stone-400 mb-4">
+      Any location can be set as the <strong class="text-stone-300">parent</strong> of another, letting you
+      build a full world hierarchy. On a location's page, use the <em>Part of</em> dropdown to assign a parent.
+    </p>
+
+    <div class="bg-stone-900 border border-stone-800 rounded p-5 mb-5 font-mono text-sm">
+      <p class="text-stone-500 mb-1 font-sans text-xs uppercase tracking-wide">Example — classic dungeon structure</p>
+      <p class="text-stone-300">The Sunken Vale <span class="text-stone-600">(region)</span></p>
+      <p class="text-stone-400 ml-4">└─ Thorngate <span class="text-stone-600">(town)</span></p>
+      <p class="text-stone-400 ml-8">└─ The Rusty Flagon <span class="text-stone-600">(tavern)</span></p>
+      <p class="text-stone-400 ml-4">└─ The Obsidian Spire <span class="text-stone-600">(dungeon)</span></p>
+      <p class="text-stone-400 ml-8">├─ Entry Hall <span class="text-stone-600">(room)</span></p>
+      <p class="text-stone-400 ml-8">├─ Fungal Gardens <span class="text-stone-600">(room)</span></p>
+      <p class="text-stone-400 ml-8">└─ The Vault <span class="text-stone-600">(room)</span></p>
+    </div>
+
+    <div class="bg-stone-900 border border-stone-800 rounded p-5 mb-5 font-mono text-sm">
+      <p class="text-stone-500 mb-1 font-sans text-xs uppercase tracking-wide">Example — city with districts</p>
+      <p class="text-stone-300">Ironmere <span class="text-stone-600">(city)</span></p>
+      <p class="text-stone-400 ml-4">├─ The Docks <span class="text-stone-600">(district)</span></p>
+      <p class="text-stone-400 ml-8">└─ The Harbormaster's Office <span class="text-stone-600">(building)</span></p>
+      <p class="text-stone-400 ml-4">├─ Merchant Quarter <span class="text-stone-600">(district)</span></p>
+      <p class="text-stone-400 ml-4">└─ Palace Hill <span class="text-stone-600">(district)</span></p>
+      <p class="text-stone-400 ml-8">└─ The Throne Room <span class="text-stone-600">(room)</span></p>
+    </div>
+
+    <p class="text-stone-500 text-sm">
+      Nesting is cosmetic and organisational — it tells players where they are in the world.
+      Use <a href="#connections" class="text-stone-400 hover:text-stone-200">connections</a> (below) to model
+      actual travel routes between locations.
+    </p>
+  </section>
+
+  {# ─────────────────────────────────────────── #}
+  {{ section("connections", "4. Location connections") }}
+    <p class="text-stone-400 mb-4">
+      Connections describe how locations link to one another — roads, doors, tunnels, portals.
+      Adding a connection automatically creates the <strong class="text-stone-300">reverse link</strong>
+      as well, so travel is always two-way unless you delete one direction manually.
+    </p>
+    <p class="text-stone-400 mb-3">
+      On a location's page, scroll to the <em>Connections</em> section and use the dropdown to pick a
+      destination. Add an optional description (e.g. <em>"3-day ride east along the King's Road"</em>
+      or <em>"locked iron door, requires the Silver Key"</em>).
+    </p>
+    <div class="bg-stone-900 border border-stone-800 rounded p-4 mb-4 text-sm">
+      <p class="text-stone-500 mb-2 text-xs uppercase tracking-wide">Typical overland setup</p>
+      <p class="text-stone-400">
+        Connect Thorngate ↔ <em class="text-stone-500">King's Road, 2 days</em> ↔ Ironmere<br/>
+        Connect Thorngate ↔ <em class="text-stone-500">Old Mine Track, half-day north</em> ↔ The Obsidian Spire
+      </p>
+      <p class="text-stone-600 text-xs mt-3">Each connection appears on both location pages automatically.</p>
+    </div>
+    <p class="text-stone-500 text-sm">
+      Players only see connections to locations that have been <strong class="text-stone-400">revealed</strong>.
+      Unrevealed destinations are hidden even if the connection itself is visible.
+    </p>
+  </section>
+
+  {# ─────────────────────────────────────────── #}
+  {{ section("entities", "5. NPCs, Factions & Artifacts") }}
+
+    <h3 class="text-base font-medium text-stone-200 mb-2">NPCs</h3>
+    <p class="text-stone-400 mb-3 text-sm">
+      Non-player characters can be assigned a home <strong class="text-stone-300">location</strong> and a
+      <strong class="text-stone-300">faction</strong>. They can carry <strong class="text-stone-300">artifacts</strong>.
+      Use the <em>Description</em> field for public lore and the <em>GM Notes</em> field for hidden motivations
+      and secrets (GM-only).
+    </p>
+
+    <h3 class="text-base font-medium text-stone-200 mb-2 mt-5">Factions</h3>
+    <p class="text-stone-400 mb-3 text-sm">
+      Factions are organisations, guilds, cults, or governments. Assign NPCs to factions to
+      make political relationships visible at a glance. Factions can be archived when they're
+      dissolved or destroyed.
+    </p>
+
+    <h3 class="text-base font-medium text-stone-200 mb-2 mt-5">Artifacts</h3>
+    <p class="text-stone-400 mb-3 text-sm">
+      Artifacts are notable items in the world — weapons, tomes, relics. Each artifact has two
+      optional fields: a <strong class="text-stone-300">holder</strong> (an NPC) and a
+      <strong class="text-stone-300">location</strong>.
+    </p>
+    <ul class="space-y-2 mb-4 text-sm text-stone-400">
+      <li class="flex items-start gap-2"><span class="text-stone-600 mt-0.5">•</span>
+        When you assign a <strong class="text-stone-300">holder</strong>, the artifact's location automatically
+        syncs to the NPC's current location. The location field becomes read-only and shows
+        <em>"follows holder"</em> — it stays in sync as long as the NPC is the holder.
+      </li>
+      <li class="flex items-start gap-2"><span class="text-stone-600 mt-0.5">•</span>
+        When there is no holder, you can set the <strong class="text-stone-300">location</strong> freely —
+        useful for artifacts stashed in a vault, buried in a dungeon room, or left at a site.
+      </li>
+      <li class="flex items-start gap-2"><span class="text-stone-600 mt-0.5">•</span>
+        Clear the holder to make the location editable again (e.g. after the NPC drops the item).
+      </li>
+    </ul>
+
+    <div class="bg-stone-900 border border-stone-800 rounded p-4 text-sm">
+      <p class="text-stone-500 mb-2 text-xs uppercase tracking-wide">Statuses</p>
+      <ul class="space-y-1 text-stone-400">
+        <li><span class="text-stone-300">extant</span> — in play, known to the world</li>
+        <li><span class="text-stone-300">lost</span> — whereabouts unknown</li>
+        <li><span class="text-stone-300">destroyed</span> — permanently gone</li>
+        <li><span class="text-stone-300">unknown</span> — existence rumoured but unconfirmed</li>
+      </ul>
+    </div>
+  </section>
+
+  {# ─────────────────────────────────────────── #}
+  {{ section("visibility", "6. Revealed vs. hidden") }}
+    <p class="text-stone-400 mb-4">
+      Every location, NPC, faction, and artifact has a
+      <strong class="text-stone-300">revealed</strong> toggle controlled by GMs.
+      Until revealed, the entity is invisible to players — it doesn't appear in lists,
+      search results, or linked dropdowns.
+    </p>
+    <ul class="space-y-2 mb-4 text-sm text-stone-400">
+      <li class="flex items-start gap-2"><span class="text-stone-600 mt-0.5">•</span>
+        GMs always see everything. Unrevealed items are shown with a subtle <em>hidden</em> badge.
+      </li>
+      <li class="flex items-start gap-2"><span class="text-stone-600 mt-0.5">•</span>
+        Reveal a location the moment players first discover it during an expedition.
+      </li>
+      <li class="flex items-start gap-2"><span class="text-stone-600 mt-0.5">•</span>
+        Connected locations only appear on a player's map if the <em>destination</em> is revealed.
+      </li>
+      <li class="flex items-start gap-2"><span class="text-stone-600 mt-0.5">•</span>
+        Artifacts carried by NPCs are hidden if the artifact itself is not revealed,
+        even if the NPC is visible.
+      </li>
+    </ul>
+    <p class="text-stone-500 text-sm">
+      Toggle visibility at any time from the entity's page. You can re-hide something if
+      players learned of it through unreliable means.
+    </p>
+  </section>
+
+  {# ─────────────────────────────────────────── #}
+  {{ section("expeditions", "7. Expeditions") }}
+    <p class="text-stone-400 mb-4">
+      An expedition is one party's foray into the world. The GM creates it, players sign up,
+      and the GM advances it through a fixed pipeline:
+    </p>
+
+    <div class="flex items-center gap-2 mb-5 flex-wrap text-sm">
+      {% for s in ["Recruiting", "Scheduled", "Active", "Completed"] %}
+        <span class="px-3 py-1 bg-stone-900 border border-stone-700 rounded text-stone-300">{{ s }}</span>
+        {% if not loop.last %}<span class="text-stone-600">→</span>{% endif %}
+      {% endfor %}
+      <span class="text-stone-600 ml-2">or</span>
+      <span class="px-3 py-1 bg-stone-900 border border-red-900 rounded text-red-500 text-sm">Cancelled</span>
+    </div>
+
+    <div class="space-y-3 mb-5 text-sm">
+      <div class="flex gap-3 items-start">
+        <span class="text-stone-300 font-medium w-24 shrink-0">Recruiting</span>
+        <span class="text-stone-500">Players with characters can apply to join. GM reviews the roster.</span>
+      </div>
+      <div class="flex gap-3 items-start">
+        <span class="text-stone-300 font-medium w-24 shrink-0">Scheduled</span>
+        <span class="text-stone-500">Roster is locked. The expedition has a planned date. Link target locations, NPCs and artifacts now.</span>
+      </div>
+      <div class="flex gap-3 items-start">
+        <span class="text-stone-300 font-medium w-24 shrink-0">Active</span>
+        <span class="text-stone-500">The session is being played. GMs can open sessions and record world changes.</span>
+      </div>
+      <div class="flex gap-3 items-start">
+        <span class="text-stone-300 font-medium w-24 shrink-0">Completed</span>
+        <span class="text-stone-500">Expedition is over. World changes are applied and the timeline is updated.</span>
+      </div>
+    </div>
+
+    <h3 class="text-base font-medium text-stone-200 mb-2">World changes</h3>
+    <p class="text-stone-400 mb-3 text-sm">
+      While an expedition is active, use the <em>World Changes</em> section to record what the party
+      did: discovering a location, defeating an NPC, acquiring an artifact. Each world change type
+      produces a matching timeline entry visible to all players once the expedition is completed.
+    </p>
+  </section>
+
+  {# ─────────────────────────────────────────── #}
+  {{ section("sessions", "8. Sessions & notes") }}
+    <p class="text-stone-400 mb-4 text-sm">
+      A <strong class="text-stone-300">session</strong> is one play session within an expedition.
+      One expedition can have many sessions (multi-session dungeons, long overland journeys).
+    </p>
+    <ul class="space-y-2 mb-4 text-sm text-stone-400">
+      <li class="flex items-start gap-2"><span class="text-stone-600 mt-0.5">•</span>
+        The GM opens a session from the expedition page. Each session has a <em>played at</em> date.
+      </li>
+      <li class="flex items-start gap-2"><span class="text-stone-600 mt-0.5">•</span>
+        After a session, the GM closes it and can publish a report — a narrative summary visible to all players.
+      </li>
+      <li class="flex items-start gap-2"><span class="text-stone-600 mt-0.5">•</span>
+        Each participating player can submit a <strong class="text-stone-300">player note</strong> from the
+        session page — their character's perspective on events.
+      </li>
+      <li class="flex items-start gap-2"><span class="text-stone-600 mt-0.5">•</span>
+        GMs can write <strong class="text-stone-300">GM records</strong> visible only to other GMs, or mark
+        entries as <em>private</em> for personal reference only.
+      </li>
+    </ul>
+  </section>
+
+  {# ─────────────────────────────────────────── #}
+  {{ section("characters", "9. Characters") }}
+    <p class="text-stone-400 mb-4 text-sm">
+      Players create characters from the <em>Characters</em> page. A character needs at minimum a name.
+      Characters can be given a class, level, and a brief description.
+    </p>
+    <ul class="space-y-2 mb-4 text-sm text-stone-400">
+      <li class="flex items-start gap-2"><span class="text-stone-600 mt-0.5">•</span>
+        Only <strong class="text-stone-300">active</strong> characters can join expeditions.
+      </li>
+      <li class="flex items-start gap-2"><span class="text-stone-600 mt-0.5">•</span>
+        Archive a character when they retire, die, or leave the campaign.
+      </li>
+      <li class="flex items-start gap-2"><span class="text-stone-600 mt-0.5">•</span>
+        GMs can see all characters. Players only see characters belonging to their own account,
+        plus basic info about other characters in shared expeditions.
+      </li>
+    </ul>
+  </section>
+
+  {# ─────────────────────────────────────────── #}
+  {{ section("timeline", "10. Timeline & activity") }}
+
+    <h3 class="text-base font-medium text-stone-200 mb-2">Timeline</h3>
+    <p class="text-stone-400 mb-4 text-sm">
+      The timeline shows world-change entries in campaign-day order. Each entry references its
+      source expedition so players can trace the history of any location or NPC. The campaign day
+      counter starts at Day 1 when the campaign is created.
+    </p>
+
+    <h3 class="text-base font-medium text-stone-200 mb-2 mt-5">Activity feed</h3>
+    <p class="text-stone-400 mb-3 text-sm">
+      The activity feed on the campaign homepage shows notable events in reverse-chronological order:
+    </p>
+    <ul class="space-y-1 text-sm text-stone-500 mb-4">
+      <li>— Expedition created, completed, or cancelled</li>
+      <li>— Session started, report published, or closed</li>
+      <li>— Location, NPC, faction, or artifact created or archived</li>
+      <li>— Character created or archived</li>
+      <li>— New member joined</li>
+    </ul>
+    <p class="text-stone-600 text-sm">
+      Intermediate expedition status steps (e.g. recruiting → scheduled) are intentionally not logged
+      to keep the feed focused on meaningful milestones.
+    </p>
+  </section>
+
+  <div class="mt-12 pt-6 border-t border-stone-800 text-center">
+    <a href="/dashboard" class="text-stone-500 hover:text-stone-300 text-sm">← Back to dashboard</a>
+  </div>
+
+</div>
+{% endblock %}
