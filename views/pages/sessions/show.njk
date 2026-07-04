@@ -9,6 +9,7 @@
     <p class="text-stone-500 text-sm">
       GM: {{ session.gm.displayName }}
       {% if session.campaignDay %} · Day {{ session.campaignDay }}{% endif %}
+      {% if session.playedAt %} · {{ session.playedAt | dateformat }}{% endif %}
       · <span class="capitalize">{{ session.status | replace("_", " ") }}</span>
     </p>
   </div>
@@ -16,17 +17,64 @@
      class="text-xs text-stone-600 hover:text-stone-400">← Expedition</a>
 </div>
 
+{# ── Schedule edit (GM only) ── #}
+{% if isGm %}
+  <div class="mb-8 flex flex-wrap items-center gap-4">
+    <form method="POST" action="/campaigns/{{ campaign.slug }}/sessions/{{ session.id }}/schedule"
+          class="flex items-center gap-2 flex-wrap">
+      {% include "partials/csrf.njk" %}
+      <span class="text-sm text-stone-500">Day:</span>
+      <input type="number" name="campaign_day" value="{{ session.campaignDay or '' }}" min="1"
+             class="w-24 bg-stone-900 border border-stone-700 rounded px-3 py-1.5 text-sm text-stone-300 focus:outline-none focus:border-stone-500"/>
+      <span class="text-sm text-stone-500">Date:</span>
+      <input type="date" name="played_at"
+             value="{{ session.playedAt | dateinput }}"
+             class="bg-stone-900 border border-stone-700 rounded px-3 py-1.5 text-sm text-stone-300 focus:outline-none focus:border-stone-500"/>
+      <button type="submit"
+              class="px-3 py-1.5 text-sm border border-stone-700 text-stone-400 rounded hover:border-stone-500 transition-colors">
+        Save
+      </button>
+    </form>
+  </div>
+{% endif %}
+
 {# ── Participants ── #}
 <div class="mb-8">
-  <h2 class="text-xs font-semibold text-stone-500 uppercase tracking-widest mb-2">Participants</h2>
-  <div class="flex flex-wrap gap-2">
+  <h2 class="text-xs font-semibold text-stone-500 uppercase tracking-widest mb-3">Participants</h2>
+  <div class="flex flex-wrap gap-2 mb-3">
     {% for p in session.participants %}
-      <span class="text-sm text-stone-400 bg-stone-900 border border-stone-800 rounded px-3 py-1">
+      <span class="flex items-center gap-1.5 text-sm text-stone-400 bg-stone-900 border border-stone-800 rounded px-3 py-1">
         {{ p.character.name }}
-        <span class="text-stone-600 text-xs ml-1">({{ p.character.player.displayName }})</span>
+        <span class="text-stone-600 text-xs">({{ p.character.player.displayName }})</span>
+        {% if isGm %}
+          <form method="POST" action="/campaigns/{{ campaign.slug }}/sessions/{{ session.id }}/participants/remove"
+                class="inline">
+            {% include "partials/csrf.njk" %}
+            <input type="hidden" name="character_id" value="{{ p.character.id }}"/>
+            <button type="submit" class="text-stone-700 hover:text-red-500 transition-colors ml-1 text-xs"
+                    onclick="return confirm('Remove {{ p.character.name }} from this session?')">✕</button>
+          </form>
+        {% endif %}
       </span>
     {% endfor %}
   </div>
+  {% if isGm and availableToAdd.length > 0 %}
+    <form method="POST" action="/campaigns/{{ campaign.slug }}/sessions/{{ session.id }}/participants/add"
+          class="flex items-center gap-2">
+      {% include "partials/csrf.njk" %}
+      <select name="character_id"
+              class="bg-stone-900 border border-stone-700 rounded px-3 py-1.5 text-sm text-stone-300 focus:outline-none focus:border-stone-500">
+        <option value="">— Add from expedition roster —</option>
+        {% for p in availableToAdd %}
+          <option value="{{ p.character.id }}">{{ p.character.name }} ({{ p.character.player.displayName }})</option>
+        {% endfor %}
+      </select>
+      <button type="submit"
+              class="px-3 py-1.5 text-sm border border-stone-700 text-stone-400 rounded hover:border-stone-500 transition-colors">
+        Add
+      </button>
+    </form>
+  {% endif %}
 </div>
 
 {# ── Session journal entry (narrative) ── #}

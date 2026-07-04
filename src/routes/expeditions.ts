@@ -19,7 +19,7 @@ import { getLocations } from "../services/locations.js";
 import { getNpcs } from "../services/npcs.js";
 import { getArtifacts } from "../services/artifacts.js";
 import { detectConflicts } from "../services/conflicts.js";
-import { createSession } from "../services/sessions.js";
+import { createSession, getSessionsForExpedition } from "../services/sessions.js";
 import { logActivity } from "../services/activity.js";
 import { calcCampaignDay } from "../services/campaigns.js";
 
@@ -102,11 +102,12 @@ router.get("/:expeditionId", async (req, res) => {
     req.session.userId!
   );
 
-  const [campaignLocations, campaignNpcs, campaignArtifacts, conflicts] = await Promise.all([
+  const [campaignLocations, campaignNpcs, campaignArtifacts, conflicts, expeditionSessions] = await Promise.all([
     getLocations(res.locals.campaign.id),
     getNpcs(res.locals.campaign.id),
     getArtifacts(res.locals.campaign.id),
     detectConflicts(expedition.id),
+    getSessionsForExpedition(expedition.id),
   ]);
 
   const nextStatus = STATUS_PIPELINE[expedition.status] ?? null;
@@ -120,6 +121,7 @@ router.get("/:expeditionId", async (req, res) => {
     campaignArtifacts,
     conflicts,
     nextStatus,
+    expeditionSessions,
     currentCampaignDay: calcCampaignDay(res.locals.campaign.createdAt),
   });
 });

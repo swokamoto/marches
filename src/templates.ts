@@ -17,6 +17,12 @@ export function configureTemplates(app: Express): void {
     });
   });
 
+  // Custom filter: ISO date string for HTML date inputs (YYYY-MM-DD)
+  env.addFilter("dateinput", (date: string | Date | null | undefined) => {
+    if (!date) return "";
+    return new Date(date).toISOString().slice(0, 10);
+  });
+
   // Custom filter: relative time, e.g. "2 hours ago"
   env.addFilter("timeago", (date: string | Date) => {
     const seconds = Math.floor(

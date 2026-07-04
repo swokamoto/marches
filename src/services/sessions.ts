@@ -49,6 +49,14 @@ export async function getSessionsForCampaign(campaignId: string) {
   });
 }
 
+export async function getSessionsForExpedition(expeditionId: string) {
+  return db.query.sessions.findMany({
+    where: eq(sessions.expeditionId, expeditionId),
+    with: { gm: { columns: { id: true, displayName: true } } },
+    orderBy: (s, { asc }) => [asc(s.createdAt)],
+  });
+}
+
 // ─── Mutations ────────────────────────────────────────────────────────────────
 
 export async function createSession(params: {
@@ -97,6 +105,37 @@ export async function updateSessionStatus(
     .where(eq(sessions.id, sessionId))
     .returning();
   return updated;
+}
+
+export async function updateSessionSchedule(
+  sessionId: string,
+  campaignDay: number | null,
+  playedAt: Date | null
+) {
+  const [updated] = await db
+    .update(sessions)
+    .set({ campaignDay, playedAt, updatedAt: new Date() })
+    .where(eq(sessions.id, sessionId))
+    .returning();
+  return updated;
+}
+
+export async function addSessionParticipant(sessionId: string, characterId: string) {
+  await db
+    .insert(sessionParticipants)
+    .values({ sessionId, characterId })
+    .onConflictDoNothing();
+}
+
+export async function removeSessionParticipant(sessionId: string, characterId: string) {
+  await db
+    .delete(sessionParticipants)
+    .where(
+      and(
+        eq(sessionParticipants.sessionId, sessionId),
+        eq(sessionParticipants.characterId, characterId)
+      )
+    );
 }
 
 // ─── Session report ───────────────────────────────────────────────────────────

@@ -5,6 +5,9 @@ import {
   getSessionById,
   getSessionsForCampaign,
   updateSessionStatus,
+  updateSessionSchedule,
+  addSessionParticipant,
+  removeSessionParticipant,
   getOrCreateReport,
   submitPlayerNote,
   isSessionParticipant,
@@ -17,6 +20,7 @@ import {
 import type { WorldChangeType } from "../services/world-changes.js";
 import { getLocations } from "../services/locations.js";
 import { getNpcs } from "../services/npcs.js";
+import { getExpeditionById } from "../services/expeditions.js";
 import { logActivity } from "../services/activity.js";
 
 const router = Router({ mergeParams: true });
@@ -61,10 +65,17 @@ router.get("/:sessionId", async (req, res) => {
     });
   }
 
-  const [campaignLocations, campaignNpcs] = await Promise.all([
+  const [campaignLocations, campaignNpcs, expeditionFull] = await Promise.all([
     getLocations(res.locals.campaign.id),
     getNpcs(res.locals.campaign.id),
+    isGm ? getExpeditionById(session.expeditionId) : Promise.resolve(null),
   ]);
+
+  // Characters on the expedition roster not yet in this session
+  const sessionCharacterIds = new Set(session.participants.map((p) => p.characterId));
+  const availableToAdd = isGm
+    ? (expeditionFull?.participants ?? []).filter((p) => !sessionCharacterIds.has(p.characterId))
+    : [];
 
   // Find if this player already submitted a note
   const myNote = session.playerNotes.find((n) => n.playerId === req.session.userId!);
@@ -81,10 +92,62 @@ router.get("/:sessionId", async (req, res) => {
     isParticipant,
     myNote,
     myParticipant,
+    availableToAdd,
     campaignLocations,
     campaignNpcs,
   });
 });
+
+// ─── Schedule (campaign day + date) ──────────────────────────────────────────
+
+router.post(
+  "/:sessionId/schedule",
+  requireCampaignRole("gm", "admin"),
+  async (req, res) => {
+    const session = await getSessionById(req.params.sessionId as string);
+    if (!session || session.campaignId !== res.locals.campaign.id) {
+      return res.status(404).render("pages/error.njk", { status: "404", message: "Session not found." });
+    }
+    const { campaign_day, played_at } = req.body as { campaign_day?: string; played_at?: string };
+    const campaignDay = campaign_day ? parseInt(campaign_day) : null;
+    const playedAt = played_at ? new Date(played_at) : null;
+    await updateSessionSchedule(session.id, campaignDay, playedAt);
+    req.session.flash = { success: "Session updated." };
+    res.redirect(`/campaigns/${res.locals.campaign.slug}/sessions/${session.id}`);
+  }
+);
+
+// ─── Participants ─────────────────────────────────────────────────────────────
+
+router.post(
+  "/:sessionId/participants/add",
+  requireCampaignRole("gm", "admin"),
+  async (req, res) => {
+    const session = await getSessionById(req.params.sessionId as string);
+    if (!session || session.campaignId !== res.locals.campaign.id) {
+      return res.status(404).render("pages/error.njk", { status: "404", message: "Session not found." });
+    }
+    const { character_id } = req.body as { character_id: string };
+    if (character_id) await addSessionParticipant(session.id, character_id);
+    req.session.flash = { success: "Participant added." };
+    res.redirect(`/campaigns/${res.locals.campaign.slug}/sessions/${session.id}`);
+  }
+);
+
+router.post(
+  "/:sessionId/participants/remove",
+  requireCampaignRole("gm", "admin"),
+  async (req, res) => {
+    const session = await getSessionById(req.params.sessionId as string);
+    if (!session || session.campaignId !== res.locals.campaign.id) {
+      return res.status(404).render("pages/error.njk", { status: "404", message: "Session not found." });
+    }
+    const { character_id } = req.body as { character_id: string };
+    if (character_id) await removeSessionParticipant(session.id, character_id);
+    req.session.flash = { success: "Participant removed." };
+    res.redirect(`/campaigns/${res.locals.campaign.slug}/sessions/${session.id}`);
+  }
+);
 
 // ─── Save report narrative (journal entry on session entity) ──────────────────
 // The narrative lives in journal_entries — the report record just holds
