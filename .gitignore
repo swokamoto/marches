@@ -5,3 +5,5 @@ dist/
 *.env.local
 public/css/app.css
 .env.local
+marches-system-design.md
+marches-interview-guide.md

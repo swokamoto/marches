@@ -61,11 +61,13 @@
 {% endif %}
 
 {# Journal entries for this character #}
-<div id="journal-section"
-     hx-get="/campaigns/{{ campaign.slug }}/journal/character/{{ character.id }}"
-     hx-trigger="load" hx-swap="outerHTML"
-     hx-on::error="this.innerHTML='<p class=text-red-700 text-sm>Failed to load records.</p>'">
-  <p class="text-stone-600 text-sm htmx-indicator">Loading records...</p>
+<div id="journal-section">
+  <div
+    hx-get="/campaigns/{{ campaign.slug }}/journal/character/{{ character.id }}"
+    hx-trigger="load" hx-swap="outerHTML"
+    hx-on::error="this.innerHTML='<p class=text-red-700 text-sm>Failed to load records.</p>'">
+    <p class="text-stone-600 text-sm htmx-indicator">Loading records...</p>
+  </div>
 </div>
 
 {% endblock %}

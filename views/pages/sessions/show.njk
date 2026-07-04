@@ -30,7 +30,7 @@
 </div>
 
 {# ── Session journal entry (narrative) ── #}
-<div class="mb-8">
+<div class="mb-8" id="journal-section">
   <h2 class="text-xs font-semibold text-stone-500 uppercase tracking-widest mb-3">Session Record</h2>
   <div
     hx-get="/campaigns/{{ campaign.slug }}/journal/session/{{ session.id }}"

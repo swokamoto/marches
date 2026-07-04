@@ -55,6 +55,12 @@
         </select>
         <button type="submit" class="px-3 py-1 text-sm bg-stone-800 text-stone-300 rounded hover:bg-stone-700 transition-colors">Join</button>
       </form>
+    {% elif playerCharacters.length === 0 %}
+      <p class="text-stone-600 text-xs mt-3">
+        You need a character to join.
+        <a href="/campaigns/{{ campaign.slug }}/characters/new"
+           class="text-stone-400 hover:text-stone-200 underline">Create one</a>.
+      </p>
     {% endif %}
   {% endif %}
 </div>
