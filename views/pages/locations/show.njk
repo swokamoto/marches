@@ -71,6 +71,18 @@
       </form>
     </div>
 
+    <form method="POST" action="/campaigns/{{ campaign.slug }}/locations/{{ location.slug }}/reveal"
+          class="flex items-center gap-3">
+      {% include "partials/csrf.njk" %}
+      <input type="hidden" name="revealed" value="{{ 'false' if location.revealed else 'true' }}"/>
+      <span class="text-sm {{ 'text-green-400' if location.revealed else 'text-stone-500' }}">
+        {{ 'Visible to players' if location.revealed else 'Hidden from players' }}
+      </span>
+      <button type="submit" class="px-3 py-1.5 text-sm border border-stone-700 text-stone-400 rounded hover:border-stone-500 transition-colors">
+        {{ 'Hide' if location.revealed else 'Reveal' }}
+      </button>
+    </form>
+
     <form method="POST" action="/campaigns/{{ campaign.slug }}/locations/{{ location.slug }}/archive"
           onsubmit="return confirm('Archive {{ location.name }}? It will be hidden from all lists.')">
             {% include "partials/csrf.njk" %}
@@ -89,6 +101,40 @@
            class="text-sm text-stone-300 bg-stone-900 border border-stone-800 rounded px-3 py-1
                   hover:border-stone-700 transition-colors">
           {{ child.name }}
+        </a>
+      {% endfor %}
+    </div>
+  </div>
+{% endif %}
+
+{# ── NPCs present ── #}
+{% if location.npcs.length > 0 %}
+  <div class="mb-8">
+    <h2 class="text-xs font-semibold text-stone-500 uppercase tracking-widest mb-3">NPCs here</h2>
+    <div class="flex flex-wrap gap-2">
+      {% for npc in location.npcs %}
+        <a href="/campaigns/{{ campaign.slug }}/npcs/{{ npc.id }}"
+           class="text-sm text-stone-300 bg-stone-900 border border-stone-800 rounded px-3 py-1
+                  hover:border-stone-700 transition-colors flex items-center gap-2">
+          {{ npc.name }}
+          <span class="text-xs text-stone-600">{{ npc.status }}</span>
+        </a>
+      {% endfor %}
+    </div>
+  </div>
+{% endif %}
+
+{# ── Artifacts present ── #}
+{% if location.artifacts.length > 0 %}
+  <div class="mb-8">
+    <h2 class="text-xs font-semibold text-stone-500 uppercase tracking-widest mb-3">Artifacts here</h2>
+    <div class="flex flex-wrap gap-2">
+      {% for artifact in location.artifacts %}
+        <a href="/campaigns/{{ campaign.slug }}/artifacts/{{ artifact.id }}"
+           class="text-sm text-stone-300 bg-stone-900 border border-stone-800 rounded px-3 py-1
+                  hover:border-stone-700 transition-colors flex items-center gap-2">
+          {{ artifact.name }}
+          <span class="text-xs text-stone-600">{{ artifact.status }}</span>
         </a>
       {% endfor %}
     </div>

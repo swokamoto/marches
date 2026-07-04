@@ -5,6 +5,7 @@ import {
   getLocationBySlug,
   createLocation,
   updateLocationStatus,
+  updateLocationRevealed,
   archiveLocation,
   searchLocations,
   updateLocationParent,
@@ -19,10 +20,12 @@ const router = Router({ mergeParams: true });
 // ─── List ─────────────────────────────────────────────────────────────────────
 
 router.get("/", async (_req, res) => {
-  const locationList = await getLocations(res.locals.campaign.id);
+  const isGm = ["gm", "admin"].includes(res.locals.member.role);
+  const locationList = await getLocations(res.locals.campaign.id, isGm);
   res.render("pages/locations/index.njk", {
     title: `Locations — ${res.locals.campaign.name}`,
     locationList,
+    isGm,
   });
 });
 
@@ -34,7 +37,7 @@ router.get("/new", requireCampaignRole("gm", "admin"), async (_req, res) => {
 });
 
 router.post("/new", requireCampaignRole("gm", "admin"), async (req, res) => {
-  const { name, parent_location_id } = req.body as { name: string; parent_location_id?: string };
+  const { name, parent_location_id, revealed } = req.body as { name: string; parent_location_id?: string; revealed?: string };
 
   if (!name?.trim()) {
     req.session.flash = { error: "Location name is required." };
@@ -45,7 +48,8 @@ router.post("/new", requireCampaignRole("gm", "admin"), async (req, res) => {
     res.locals.campaign.id,
     name,
     req.session.userId!,
-    parent_location_id || undefined
+    parent_location_id || undefined,
+    revealed === "on"
   );
 
   void logActivity({
@@ -76,12 +80,21 @@ router.get("/search", async (req, res) => {
 // ─── Detail ───────────────────────────────────────────────────────────────────
 
 router.get("/:locationSlug", async (req, res) => {
+  const isGm = ["gm", "admin"].includes(res.locals.member.role);
   const location = await getLocationBySlug(
     res.locals.campaign.id,
-    req.params.locationSlug
+    req.params.locationSlug,
+    isGm
   );
 
   if (!location) {
+    return res.status(404).render("pages/error.njk", {
+      status: "404",
+      message: "Location not found.",
+    });
+  }
+
+  if (!isGm && !location.revealed) {
     return res.status(404).render("pages/error.njk", {
       status: "404",
       message: "Location not found.",
@@ -94,6 +107,7 @@ router.get("/:locationSlug", async (req, res) => {
     title: `${location.name} — ${res.locals.campaign.name}`,
     location,
     allLocations,
+    isGm,
   });
 });
 
@@ -143,6 +157,19 @@ router.post(
 );
 
 // ─── Archive (GM/admin only) ──────────────────────────────────────────────
+router.post(
+  "/:locationSlug/reveal",
+  requireCampaignRole("gm", "admin"),
+  async (req, res) => {
+    const slug = Array.isArray(req.params.locationSlug) ? req.params.locationSlug[0] : req.params.locationSlug;
+    const location = await getLocationBySlug(res.locals.campaign.id, slug);
+    if (!location) return res.status(404).render("pages/error.njk", { status: "404", message: "Location not found." });
+    const revealed = req.body.revealed === "true";
+    await updateLocationRevealed(location.id, revealed);
+    res.redirect(`/campaigns/${res.locals.campaign.slug}/locations/${location.slug}`);
+  }
+);
+
 router.post(
   "/:locationSlug/archive",
   requireCampaignRole("gm", "admin"),

@@ -1,20 +1,23 @@
 import { Router } from "express";
 import { requireCampaignRole } from "../middleware/campaign.js";
-import { getArtifactsPaginated, getArtifactById, createArtifact, updateArtifact, updateArtifactStatus, searchArtifacts, updateArtifactLocation, archiveArtifact } from "../services/artifacts.js";
+import { getArtifactsPaginated, getArtifactById, createArtifact, updateArtifact, updateArtifactStatus, searchArtifacts, updateArtifactLocation, updateArtifactNpc, updateArtifactRevealed, archiveArtifact } from "../services/artifacts.js";
 import { getLocations } from "../services/locations.js";
+import { getNpcs } from "../services/npcs.js";
 import { logActivity } from "../services/activity.js";
 
 const router = Router({ mergeParams: true });
 
 router.get("/", async (req, res) => {
+  const isGm = ["gm", "admin"].includes(res.locals.member.role);
   const page = Math.max(1, parseInt(String(req.query.page ?? "1")));
-  const { artifacts: artifactList, total, totalPages } = await getArtifactsPaginated(res.locals.campaign.id, page);
+  const { artifacts: artifactList, total, totalPages } = await getArtifactsPaginated(res.locals.campaign.id, page, isGm);
   res.render("pages/artifacts/index.njk", {
     title: `Artifacts — ${res.locals.campaign.name}`,
     artifactList,
     page,
     total,
     totalPages,
+    isGm,
   });
 });
 
@@ -23,12 +26,12 @@ router.get("/new", requireCampaignRole("gm", "admin"), (_req, res) => {
 });
 
 router.post("/new", requireCampaignRole("gm", "admin"), async (req, res) => {
-  const { name, description } = req.body as { name: string; description?: string };
+  const { name, description, revealed } = req.body as { name: string; description?: string; revealed?: string };
   if (!name?.trim()) {
     req.session.flash = { error: "Artifact name is required." };
     return res.redirect(`/campaigns/${res.locals.campaign.slug}/artifacts/new`);
   }
-  const artifact = await createArtifact(res.locals.campaign.id, name, req.session.userId!, description);
+  const artifact = await createArtifact(res.locals.campaign.id, name, req.session.userId!, description, revealed === "on");
   void logActivity({
     campaignId: res.locals.campaign.id,
     actorId: req.session.userId!,
@@ -54,12 +57,19 @@ router.get("/:artifactId", async (req, res) => {
   if (!artifact || artifact.campaignId !== res.locals.campaign.id) {
     return res.status(404).render("pages/error.njk", { status: "404", message: "Artifact not found." });
   }
-  const campaignLocations = await getLocations(res.locals.campaign.id);
   const isGm = ["gm", "admin"].includes(res.locals.member.role);
+  if (!isGm && !artifact.revealed) {
+    return res.status(404).render("pages/error.njk", { status: "404", message: "Artifact not found." });
+  }
+  const [campaignLocations, campaignNpcs] = await Promise.all([
+    getLocations(res.locals.campaign.id),
+    getNpcs(res.locals.campaign.id),
+  ]);
   res.render("pages/artifacts/show.njk", {
     title: `${artifact.name} — ${res.locals.campaign.name}`,
     artifact,
     campaignLocations,
+    campaignNpcs,
     isGm,
   });
 });
@@ -123,6 +133,22 @@ router.post(
 );
 
 router.post(
+  "/:artifactId/npc",
+  requireCampaignRole("gm", "admin"),
+  async (req, res) => {
+    const artifactId = Array.isArray(req.params.artifactId) ? req.params.artifactId[0] : req.params.artifactId;
+    const artifact = await getArtifactById(artifactId);
+    if (!artifact || artifact.campaignId !== res.locals.campaign.id) {
+      return res.status(404).render("pages/error.njk", { status: "404", message: "Artifact not found." });
+    }
+    const { npc_id } = req.body as { npc_id: string };
+    await updateArtifactNpc(artifact.id, npc_id || null);
+    req.session.flash = { success: "Holder updated." };
+    res.redirect(`/campaigns/${res.locals.campaign.slug}/artifacts/${artifact.id}`);
+  }
+);
+
+router.post(
   "/:artifactId/archive",
   requireCampaignRole("gm", "admin"),
   async (req, res) => {
@@ -143,6 +169,21 @@ router.post(
     });
     req.session.flash = { success: `"${artifact.name}" has been archived.` };
     res.redirect(`/campaigns/${res.locals.campaign.slug}/artifacts`);
+  }
+);
+
+router.post(
+  "/:artifactId/reveal",
+  requireCampaignRole("gm", "admin"),
+  async (req, res) => {
+    const artifactId = Array.isArray(req.params.artifactId) ? req.params.artifactId[0] : req.params.artifactId;
+    const artifact = await getArtifactById(artifactId);
+    if (!artifact || artifact.campaignId !== res.locals.campaign.id) {
+      return res.status(404).render("pages/error.njk", { status: "404", message: "Artifact not found." });
+    }
+    const revealed = req.body.revealed === "true";
+    await updateArtifactRevealed(artifact.id, revealed);
+    res.redirect(`/campaigns/${res.locals.campaign.slug}/artifacts/${artifact.id}`);
   }
 );
 

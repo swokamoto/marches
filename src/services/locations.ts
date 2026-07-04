@@ -1,6 +1,6 @@
 import { db } from "../db/index.js";
 import { locations, locationConnections } from "../db/schema.js";
-import { eq, and, isNull, ilike } from "drizzle-orm";
+import { eq, and, isNull, ilike, sql } from "drizzle-orm";
 import type { InferSelectModel } from "drizzle-orm";
 import { slugify } from "../utils/slugify.js";
 
@@ -31,15 +31,17 @@ async function uniqueLocationSlug(
 
 // ─── Queries ──────────────────────────────────────────────────────────────────
 
-export async function getLocations(campaignId: string) {
+export async function getLocations(campaignId: string, isGm = true) {
+  const baseWhere = and(eq(locations.campaignId, campaignId), isNull(locations.archivedAt));
+  const whereClause = isGm ? baseWhere : and(baseWhere, eq(locations.revealed, true));
   return db.query.locations.findMany({
-    where: and(eq(locations.campaignId, campaignId), isNull(locations.archivedAt)),
+    where: whereClause,
     orderBy: (l, { asc }) => [asc(l.name)],
   });
 }
 
-export async function getLocationBySlug(campaignId: string, slug: string) {
-  return db.query.locations.findFirst({
+export async function getLocationBySlug(campaignId: string, slug: string, isGm = true) {
+  const result = await db.query.locations.findFirst({
     where: and(
       eq(locations.campaignId, campaignId),
       eq(locations.slug, slug)
@@ -47,14 +49,38 @@ export async function getLocationBySlug(campaignId: string, slug: string) {
     with: {
       parent: { columns: { id: true, name: true, slug: true } },
       children: {
-        where: isNull(locations.archivedAt),
+        where: (l, { isNull, and }) => isGm
+          ? isNull(l.archivedAt)
+          : and(isNull(l.archivedAt), sql`${l.revealed} = true`),
         columns: { id: true, name: true, slug: true, status: true },
       },
       connectionsFrom: {
-        with: { toLocation: { columns: { id: true, name: true, slug: true, status: true } } },
+        with: { toLocation: { columns: { id: true, name: true, slug: true, status: true, revealed: true } } },
+      },
+      npcs: {
+        where: (n, { isNull, and }) => isGm
+          ? isNull(n.archivedAt)
+          : and(isNull(n.archivedAt), sql`${n.revealed} = true`),
+        columns: { id: true, name: true, status: true },
+        orderBy: (n, { asc }) => [asc(n.name)],
+      },
+      artifacts: {
+        where: (a, { isNull, and }) => isGm
+          ? isNull(a.archivedAt)
+          : and(isNull(a.archivedAt), sql`${a.revealed} = true`),
+        columns: { id: true, name: true, status: true },
+        orderBy: (a, { asc }) => [asc(a.name)],
       },
     },
   });
+  if (!result) return result;
+  if (!isGm) {
+    return {
+      ...result,
+      connectionsFrom: result.connectionsFrom.filter(c => c.toLocation.revealed),
+    };
+  }
+  return result;
 }
 
 export async function getLocationById(id: string) {
@@ -81,16 +107,26 @@ export async function createLocation(
   campaignId: string,
   name: string,
   createdBy: string,
-  parentLocationId?: string
+  parentLocationId?: string,
+  revealed = false
 ) {
   const slug = await uniqueLocationSlug(campaignId, slugify(name));
 
   const [location] = await db
     .insert(locations)
-    .values({ campaignId, name: name.trim(), slug, createdBy, parentLocationId: parentLocationId || null })
+    .values({ campaignId, name: name.trim(), slug, createdBy, parentLocationId: parentLocationId || null, revealed })
     .returning();
 
   return location;
+}
+
+export async function updateLocationRevealed(locationId: string, revealed: boolean) {
+  const [updated] = await db
+    .update(locations)
+    .set({ revealed, updatedAt: new Date() })
+    .where(eq(locations.id, locationId))
+    .returning();
+  return updated;
 }
 
 export async function updateLocationParent(
@@ -110,13 +146,30 @@ export async function addLocationConnection(
   toLocationId: string,
   description?: string
 ) {
+  const desc = description?.trim() || null;
   await db
     .insert(locationConnections)
-    .values({ fromLocationId, toLocationId, description: description?.trim() || null })
+    .values([
+      { fromLocationId, toLocationId, description: desc },
+      { fromLocationId: toLocationId, toLocationId: fromLocationId, description: desc },
+    ])
     .onConflictDoNothing();
 }
 
 export async function removeLocationConnection(connectionId: string) {
+  // Look up the connection first so we can also delete the reverse.
+  const conn = await db.query.locationConnections.findFirst({
+    where: eq(locationConnections.id, connectionId),
+  });
+  if (!conn) return;
+  await db
+    .delete(locationConnections)
+    .where(
+      and(
+        eq(locationConnections.fromLocationId, conn.toLocationId),
+        eq(locationConnections.toLocationId, conn.fromLocationId)
+      )
+    );
   await db
     .delete(locationConnections)
     .where(eq(locationConnections.id, connectionId));

@@ -15,24 +15,32 @@ export async function getArtifacts(campaignId: string) {
   });
 }
 
-export async function getArtifactsPaginated(campaignId: string, page = 1) {
+export async function getArtifactsPaginated(campaignId: string, page = 1, isGm = true) {
   const offset = (page - 1) * ARTIFACTS_PER_PAGE;
+  const baseWhere = and(eq(artifacts.campaignId, campaignId), isNull(artifacts.archivedAt));
+  const whereClause = isGm ? baseWhere : and(baseWhere, eq(artifacts.revealed, true));
   const [rows, [{ total }]] = await Promise.all([
     db.query.artifacts.findMany({
-      where: and(eq(artifacts.campaignId, campaignId), isNull(artifacts.archivedAt)),
-      with: { location: { columns: { id: true, name: true } } },
+      where: whereClause,
+      with: {
+        location: { columns: { id: true, name: true } },
+        npc: { columns: { id: true, name: true } },
+      },
       orderBy: (a, { asc }) => [asc(a.name)],
       limit: ARTIFACTS_PER_PAGE,
       offset,
     }),
     db.select({ total: count() }).from(artifacts)
-      .where(and(eq(artifacts.campaignId, campaignId), isNull(artifacts.archivedAt))),
+      .where(whereClause),
   ]);
   return { artifacts: rows, total: Number(total), page, totalPages: Math.ceil(Number(total) / ARTIFACTS_PER_PAGE) };
 }
 
 export async function getArtifactById(id: string) {
-  return db.query.artifacts.findFirst({ where: eq(artifacts.id, id) });
+  return db.query.artifacts.findFirst({
+    where: eq(artifacts.id, id),
+    with: { npc: { columns: { id: true, name: true } } },
+  });
 }
 
 export async function searchArtifacts(campaignId: string, query: string) {
@@ -51,13 +59,23 @@ export async function createArtifact(
   campaignId: string,
   name: string,
   createdBy: string,
-  description?: string
+  description?: string,
+  revealed = false
 ) {
   const [artifact] = await db
     .insert(artifacts)
-    .values({ campaignId, name: name.trim(), description: description?.trim() || null, createdBy })
+    .values({ campaignId, name: name.trim(), description: description?.trim() || null, createdBy, revealed })
     .returning();
   return artifact;
+}
+
+export async function updateArtifactRevealed(artifactId: string, revealed: boolean) {
+  const [updated] = await db
+    .update(artifacts)
+    .set({ revealed, updatedAt: new Date() })
+    .where(eq(artifacts.id, artifactId))
+    .returning();
+  return updated;
 }
 
 export async function updateArtifact(
@@ -91,6 +109,18 @@ export async function updateArtifactLocation(
   const [updated] = await db
     .update(artifacts)
     .set({ locationId, updatedAt: new Date() })
+    .where(eq(artifacts.id, artifactId))
+    .returning();
+  return updated;
+}
+
+export async function updateArtifactNpc(
+  artifactId: string,
+  npcId: string | null
+) {
+  const [updated] = await db
+    .update(artifacts)
+    .set({ npcId, updatedAt: new Date() })
     .where(eq(artifacts.id, artifactId))
     .returning();
   return updated;
