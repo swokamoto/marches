@@ -20,7 +20,8 @@ import {
 import type { WorldChangeType } from "../services/world-changes.js";
 import { getLocations } from "../services/locations.js";
 import { getNpcs } from "../services/npcs.js";
-import { getExpeditionById } from "../services/expeditions.js";
+import { getExpeditionById, addExpeditionParticipant, getPlayerCharactersForCampaign } from "../services/expeditions.js";
+import { getCharacters } from "../services/characters.js";
 import { logActivity } from "../services/activity.js";
 
 const router = Router({ mergeParams: true });
@@ -65,17 +66,21 @@ router.get("/:sessionId", async (req, res) => {
     });
   }
 
-  const [campaignLocations, campaignNpcs, expeditionFull] = await Promise.all([
+  const [campaignLocations, campaignNpcs, allCampaignCharacters, myActiveCharacters] = await Promise.all([
     getLocations(res.locals.campaign.id),
     getNpcs(res.locals.campaign.id),
-    isGm ? getExpeditionById(session.expeditionId) : Promise.resolve(null),
+    isGm ? getCharacters(res.locals.campaign.id) : Promise.resolve([]),
+    !isGm ? getPlayerCharactersForCampaign(res.locals.campaign.id, req.session.userId!) : Promise.resolve([]),
   ]);
 
-  // Characters on the expedition roster not yet in this session
+  // GM dropdown: all active campaign characters not already in this session
   const sessionCharacterIds = new Set(session.participants.map((p) => p.characterId));
   const availableToAdd = isGm
-    ? (expeditionFull?.participants ?? []).filter((p) => !sessionCharacterIds.has(p.characterId))
+    ? allCampaignCharacters.filter((c) => !sessionCharacterIds.has(c.id))
     : [];
+
+  // Player join: their active characters not already in this session
+  const myJoinableCharacters = myActiveCharacters.filter((c) => !sessionCharacterIds.has(c.id));
 
   // Find if this player already submitted a note
   const myNote = session.playerNotes.find((n) => n.playerId === req.session.userId!);
@@ -93,6 +98,7 @@ router.get("/:sessionId", async (req, res) => {
     myNote,
     myParticipant,
     availableToAdd,
+    myJoinableCharacters,
     campaignLocations,
     campaignNpcs,
   });
@@ -128,7 +134,11 @@ router.post(
       return res.status(404).render("pages/error.njk", { status: "404", message: "Session not found." });
     }
     const { character_id } = req.body as { character_id: string };
-    if (character_id) await addSessionParticipant(session.id, character_id);
+    if (character_id) {
+      await addSessionParticipant(session.id, character_id);
+      // Also add to expedition roster if not already there
+      await addExpeditionParticipant(session.expeditionId, character_id);
+    }
     req.session.flash = { success: "Participant added." };
     res.redirect(`/campaigns/${res.locals.campaign.slug}/sessions/${session.id}`);
   }
@@ -145,6 +155,31 @@ router.post(
     const { character_id } = req.body as { character_id: string };
     if (character_id) await removeSessionParticipant(session.id, character_id);
     req.session.flash = { success: "Participant removed." };
+    res.redirect(`/campaigns/${res.locals.campaign.slug}/sessions/${session.id}`);
+  }
+);
+
+// Players self-join an open session
+router.post(
+  "/:sessionId/join",
+  async (req, res) => {
+    const session = await getSessionById(req.params.sessionId as string);
+    if (!session || session.campaignId !== res.locals.campaign.id) {
+      return res.status(404).render("pages/error.njk", { status: "404", message: "Session not found." });
+    }
+    if (session.status === "closed") {
+      req.session.flash = { error: "This session is already closed." };
+      return res.redirect(`/campaigns/${res.locals.campaign.slug}/sessions/${session.id}`);
+    }
+    const { character_id } = req.body as { character_id: string };
+    const myCharacters = await getPlayerCharactersForCampaign(res.locals.campaign.id, req.session.userId!);
+    if (!myCharacters.some((c) => c.id === character_id)) {
+      return res.status(403).render("pages/error.njk", { status: "403", message: "Character not found." });
+    }
+    await addSessionParticipant(session.id, character_id);
+    // Also add to expedition roster so they appear in world changes / reports
+    await addExpeditionParticipant(session.expeditionId, character_id);
+    req.session.flash = { success: "You've joined this session." };
     res.redirect(`/campaigns/${res.locals.campaign.slug}/sessions/${session.id}`);
   }
 );

@@ -58,21 +58,49 @@
       </span>
     {% endfor %}
   </div>
+
+  {# GM: add any campaign character #}
   {% if isGm and availableToAdd.length > 0 %}
     <form method="POST" action="/campaigns/{{ campaign.slug }}/sessions/{{ session.id }}/participants/add"
           class="flex items-center gap-2">
       {% include "partials/csrf.njk" %}
       <select name="character_id"
               class="bg-stone-900 border border-stone-700 rounded px-3 py-1.5 text-sm text-stone-300 focus:outline-none focus:border-stone-500">
-        <option value="">— Add from expedition roster —</option>
-        {% for p in availableToAdd %}
-          <option value="{{ p.character.id }}">{{ p.character.name }} ({{ p.character.player.displayName }})</option>
+        <option value="">— Add participant —</option>
+        {% for c in availableToAdd %}
+          <option value="{{ c.id }}">{{ c.name }} ({{ c.player.displayName }})</option>
         {% endfor %}
       </select>
       <button type="submit"
               class="px-3 py-1.5 text-sm border border-stone-700 text-stone-400 rounded hover:border-stone-500 transition-colors">
         Add
       </button>
+    </form>
+  {% endif %}
+
+  {# Player: self-join if they have a character not already in this session #}
+  {% if not isGm and session.status !== 'closed' and myJoinableCharacters.length > 0 %}
+    <form method="POST" action="/campaigns/{{ campaign.slug }}/sessions/{{ session.id }}/join"
+          class="flex items-center gap-2 mt-2">
+      {% include "partials/csrf.njk" %}
+      {% if myJoinableCharacters.length === 1 %}
+        <input type="hidden" name="character_id" value="{{ myJoinableCharacters[0].id }}"/>
+        <button type="submit"
+                class="px-4 py-1.5 text-sm bg-stone-100 text-stone-900 rounded font-medium hover:bg-white transition-colors">
+          Join as {{ myJoinableCharacters[0].name }}
+        </button>
+      {% else %}
+        <select name="character_id"
+                class="bg-stone-900 border border-stone-700 rounded px-3 py-1.5 text-sm text-stone-300 focus:outline-none focus:border-stone-500">
+          {% for c in myJoinableCharacters %}
+            <option value="{{ c.id }}">{{ c.name }}</option>
+          {% endfor %}
+        </select>
+        <button type="submit"
+                class="px-4 py-1.5 text-sm bg-stone-100 text-stone-900 rounded font-medium hover:bg-white transition-colors">
+          Join this session
+        </button>
+      {% endif %}
     </form>
   {% endif %}
 </div>
