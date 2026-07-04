@@ -2,7 +2,7 @@ import { Router } from "express";
 import { requireCampaignRole } from "../middleware/campaign.js";
 import { getArtifactsPaginated, getArtifactById, createArtifact, updateArtifact, updateArtifactStatus, searchArtifacts, updateArtifactLocation, updateArtifactNpc, updateArtifactRevealed, archiveArtifact } from "../services/artifacts.js";
 import { getLocations } from "../services/locations.js";
-import { getNpcs } from "../services/npcs.js";
+import { getNpcs, getNpcById } from "../services/npcs.js";
 import { logActivity } from "../services/activity.js";
 
 const router = Router({ mergeParams: true });
@@ -142,7 +142,13 @@ router.post(
       return res.status(404).render("pages/error.njk", { status: "404", message: "Artifact not found." });
     }
     const { npc_id } = req.body as { npc_id: string };
-    await updateArtifactNpc(artifact.id, npc_id || null);
+    // When assigning a holder, sync the artifact's location to the NPC's location.
+    let locationId: string | null | undefined;
+    if (npc_id) {
+      const npc = await getNpcById(npc_id);
+      if (npc?.locationId) locationId = npc.locationId;
+    }
+    await updateArtifactNpc(artifact.id, npc_id || null, locationId);
     req.session.flash = { success: "Holder updated." };
     res.redirect(`/campaigns/${res.locals.campaign.slug}/artifacts/${artifact.id}`);
   }

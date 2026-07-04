@@ -50,25 +50,31 @@
 
     <div class="flex items-center gap-3">
       <span class="text-sm text-stone-500">Location:</span>
-      <form method="POST" action="/campaigns/{{ campaign.slug }}/artifacts/{{ artifact.id }}/location"
-            class="flex items-center gap-2">
-              {% include "partials/csrf.njk" %}
-        <select name="location_id"
-                class="bg-stone-900 border border-stone-700 rounded px-3 py-1.5 text-sm text-stone-300 focus:outline-none focus:border-stone-500">
-          <option value="">— None —</option>
-          {% for loc in campaignLocations %}
-            <option value="{{ loc.id }}" {% if artifact.locationId === loc.id %}selected{% endif %}>{{ loc.name }}</option>
-          {% endfor %}
-        </select>
-        <button type="submit" class="px-3 py-1.5 text-sm border border-stone-700 text-stone-400 rounded hover:border-stone-500 transition-colors">Save</button>
-      </form>
-      {% if artifact.locationId %}
-        {% for loc in campaignLocations %}
-          {% if loc.id === artifact.locationId %}
-            <a href="/campaigns/{{ campaign.slug }}/locations/{{ loc.slug }}"
-               class="text-xs text-stone-400 hover:text-stone-200 transition-colors">→ {{ loc.name }}</a>
-          {% endif %}
-        {% endfor %}
+      {% if artifact.npcId %}
+        <span class="text-sm text-stone-600 italic">follows holder</span>
+        {% if artifact.location %}
+          <a href="/campaigns/{{ campaign.slug }}/locations/{{ artifact.location.slug }}"
+             class="text-xs text-stone-400 hover:text-stone-200 transition-colors">→ {{ artifact.location.name }}</a>
+        {% else %}
+          <span class="text-xs text-stone-700">— holder has no location</span>
+        {% endif %}
+      {% else %}
+        <form method="POST" action="/campaigns/{{ campaign.slug }}/artifacts/{{ artifact.id }}/location"
+              class="flex items-center gap-2">
+          {% include "partials/csrf.njk" %}
+          <select name="location_id"
+                  class="bg-stone-900 border border-stone-700 rounded px-3 py-1.5 text-sm text-stone-300 focus:outline-none focus:border-stone-500">
+            <option value="">— None —</option>
+            {% for loc in campaignLocations %}
+              <option value="{{ loc.id }}" {% if artifact.locationId === loc.id %}selected{% endif %}>{{ loc.name }}</option>
+            {% endfor %}
+          </select>
+          <button type="submit" class="px-3 py-1.5 text-sm border border-stone-700 text-stone-400 rounded hover:border-stone-500 transition-colors">Save</button>
+        </form>
+        {% if artifact.location %}
+          <a href="/campaigns/{{ campaign.slug }}/locations/{{ artifact.location.slug }}"
+             class="text-xs text-stone-400 hover:text-stone-200 transition-colors">→ {{ artifact.location.name }}</a>
+        {% endif %}
       {% endif %}
     </div>
 

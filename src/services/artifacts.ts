@@ -39,7 +39,10 @@ export async function getArtifactsPaginated(campaignId: string, page = 1, isGm =
 export async function getArtifactById(id: string) {
   return db.query.artifacts.findFirst({
     where: eq(artifacts.id, id),
-    with: { npc: { columns: { id: true, name: true } } },
+    with: {
+      npc: { columns: { id: true, name: true } },
+      location: { columns: { id: true, name: true, slug: true } },
+    },
   });
 }
 
@@ -116,11 +119,12 @@ export async function updateArtifactLocation(
 
 export async function updateArtifactNpc(
   artifactId: string,
-  npcId: string | null
+  npcId: string | null,
+  locationId?: string | null
 ) {
   const [updated] = await db
     .update(artifacts)
-    .set({ npcId, updatedAt: new Date() })
+    .set({ npcId, ...(locationId !== undefined ? { locationId } : {}), updatedAt: new Date() })
     .where(eq(artifacts.id, artifactId))
     .returning();
   return updated;
