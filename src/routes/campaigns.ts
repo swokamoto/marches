@@ -24,6 +24,7 @@ import { getRecentActivity, describeActivity, logActivity } from "../services/ac
 import { getExpeditions } from "../services/expeditions.js";
 import { getWorldEvents } from "../services/timeline.js";
 import { getCampaignByInviteCode, addMember } from "../services/members.js";
+import { getPlayerSessionsForCampaign } from "../services/sessions.js";
 
 const router = Router();
 
@@ -158,10 +159,14 @@ router.get(
   "/:slug",
   loadCampaign,
   requireCampaignMember,
-  async (_req, res) => {
-    const [{ expeditions: expeditionList }, recentEvents] = await Promise.all([
+  async (req, res) => {
+    const isPlayer = res.locals.member.role === "player";
+    const [{ expeditions: expeditionList }, recentEvents, mySessions] = await Promise.all([
       getExpeditions(res.locals.campaign.id),
       getWorldEvents(res.locals.campaign.id),
+      isPlayer
+        ? getPlayerSessionsForCampaign(res.locals.campaign.id, req.session.userId!)
+        : Promise.resolve([]),
     ]);
 
     const activeExpeditions = expeditionList.filter(
@@ -172,6 +177,7 @@ router.get(
       title: res.locals.campaign.name,
       activeExpeditions,
       recentEvents: recentEvents.slice(0, 5),
+      mySessions,
     });
   }
 );

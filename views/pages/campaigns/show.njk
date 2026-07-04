@@ -75,6 +75,30 @@
 
 </div>
 
+{# ── Player involvement ── #}
+{% if mySessions.length > 0 %}
+<div class="bg-stone-900 border border-stone-800 rounded p-5 mb-6">
+  <h2 class="text-sm font-medium text-stone-400 uppercase tracking-wide mb-4">Your Sessions</h2>
+  <div class="space-y-2">
+    {% for row in mySessions %}
+      <a href="/campaigns/{{ campaign.slug }}/sessions/{{ row.sessionId }}"
+         class="flex items-start justify-between text-sm py-1.5 border-b border-stone-800 last:border-0 hover:text-stone-100 transition-colors group">
+        <div>
+          <span class="text-stone-300 group-hover:text-white">{{ row.session.expedition.title }}</span>
+          <span class="text-stone-600 ml-2">as {{ row.characterName }}</span>
+        </div>
+        <span class="text-xs capitalize shrink-0 ml-4
+          {% if row.session.expedition.status === 'active' %}text-stone-400
+          {% elif row.session.expedition.status in ['recruiting', 'scheduled'] %}text-stone-500
+          {% else %}text-stone-700{% endif %}">
+          {{ row.session.expedition.status }}
+        </span>
+      </a>
+    {% endfor %}
+  </div>
+</div>
+{% endif %}
+
 {# ── Activity feed ── #}
 <div class="mt-8">
   <h2 class="text-sm font-medium text-stone-400 uppercase tracking-wide mb-4">

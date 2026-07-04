@@ -7,7 +7,7 @@ import {
   expeditions,
   characters,
 } from "../db/schema.js";
-import { eq, and } from "drizzle-orm";
+import { eq, and, inArray } from "drizzle-orm";
 import type { InferSelectModel } from "drizzle-orm";
 
 export type Session = InferSelectModel<typeof sessions>;
@@ -55,6 +55,64 @@ export async function getSessionsForExpedition(expeditionId: string) {
     with: { gm: { columns: { id: true, displayName: true } } },
     orderBy: (s, { asc }) => [asc(s.createdAt)],
   });
+}
+
+/**
+ * Returns sessions (with expedition info) that any of the given user's
+ * characters are participating in, scoped to a campaign.
+ */
+export async function getPlayerSessionsForCampaign(campaignId: string, userId: string) {
+  // Find this player's characters in the campaign
+  const playerChars = await db.query.characters.findMany({
+    where: and(
+      eq(characters.campaignId, campaignId),
+      eq(characters.playerId, userId)
+    ),
+    columns: { id: true, name: true },
+  });
+
+  if (playerChars.length === 0) return [];
+
+  const charIds = playerChars.map((c) => c.id);
+
+  // Find session participants rows for those characters
+  const rows = await db.query.sessionParticipants.findMany({
+    where: inArray(sessionParticipants.characterId, charIds),
+    with: {
+      session: {
+        with: {
+          expedition: { columns: { id: true, title: true, status: true } },
+        },
+      },
+    },
+  });
+
+  // Attach character name and return, deduplicated by sessionId
+  const seen = new Set<string>();
+  const result: Array<{
+    sessionId: string;
+    characterId: string;
+    characterName: string;
+    session: (typeof rows)[number]["session"];
+  }> = [];
+
+  for (const row of rows) {
+    if (seen.has(row.session.id)) continue;
+    seen.add(row.session.id);
+    const char = playerChars.find((c) => c.id === row.characterId)!;
+    result.push({
+      sessionId: row.session.id,
+      characterId: row.characterId,
+      characterName: char.name,
+      session: row.session,
+    });
+  }
+
+  // Sort: active expeditions first, then by session id (creation order proxy)
+  const statusOrder: Record<string, number> = { active: 0, scheduled: 1, recruiting: 2, completed: 3, cancelled: 4 };
+  result.sort((a, b) => (statusOrder[a.session.expedition.status] ?? 9) - (statusOrder[b.session.expedition.status] ?? 9));
+
+  return result;
 }
 
 // ─── Mutations ────────────────────────────────────────────────────────────────
