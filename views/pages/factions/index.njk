@@ -1,0 +1,38 @@
+{% extends "layouts/base.njk" %}
+{% block content %}
+<div class="flex items-center justify-between mb-6">
+  <h1 class="text-2xl font-semibold text-stone-100">Factions</h1>
+  {% if member.role in ['gm', 'admin'] %}
+    <a href="/campaigns/{{ campaign.slug }}/factions/new"
+       class="px-4 py-2 bg-stone-100 text-stone-900 text-sm font-medium rounded hover:bg-white transition-colors">
+      New Faction
+    </a>
+  {% endif %}
+</div>
+
+{% if factionList.length === 0 %}
+  <div class="border border-dashed border-stone-800 rounded p-12 text-center">
+    <p class="text-stone-500">No factions recorded yet.</p>
+  </div>
+{% else %}
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+    {% for faction in factionList %}
+      <a href="/campaigns/{{ campaign.slug }}/factions/{{ faction.id }}"
+         class="block bg-stone-900 border border-stone-800 rounded p-5 hover:border-stone-700 transition-colors">
+        <div class="flex items-start justify-between gap-3">
+          <span class="font-medium text-stone-100">{{ faction.name }}</span>
+          <span class="shrink-0 text-xs px-2 py-0.5 rounded-full border
+            {% if faction.status === 'active' %}border-green-800 text-green-400
+            {% elif faction.status === 'disbanded' %}border-stone-700 text-stone-500
+            {% else %}border-stone-700 text-stone-500{% endif %}">
+            {{ faction.status }}
+          </span>
+        </div>
+        {% if faction.description %}
+          <p class="text-xs text-stone-600 mt-1 truncate">{{ faction.description }}</p>
+        {% endif %}
+      </a>
+    {% endfor %}
+  </div>
+{% endif %}
+{% endblock %}

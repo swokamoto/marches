@@ -21,10 +21,17 @@
          class="block bg-stone-900 border border-stone-800 rounded p-5 hover:border-stone-700 transition-colors">
         <div class="flex items-start justify-between gap-3">
           <span class="font-medium text-stone-100">{{ npc.name }}</span>
-          {% include "partials/npc-status-badge.njk" %}
+          <div class="flex items-center gap-1 shrink-0">
+            {% if isGm and not npc.revealed %}
+              <span class="text-xs px-1.5 py-0.5 rounded border border-stone-700 text-stone-600">hidden</span>
+            {% endif %}
+            {% include "partials/npc-status-badge.njk" %}
+          </div>
         </div>
         {% if npc.description %}
           <p class="text-xs text-stone-600 mt-1 truncate">{{ npc.description }}</p>
+        {% elif npc.faction %}
+          <p class="text-xs text-stone-600 mt-1">{{ npc.faction.name }}</p>
         {% elif npc.location %}
           <p class="text-xs text-stone-600 mt-1">@ {{ npc.location.name }}</p>
         {% endif %}

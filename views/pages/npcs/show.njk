@@ -42,7 +42,46 @@
         </select>
         <button type="submit" class="px-3 py-1.5 text-sm border border-stone-700 text-stone-400 rounded hover:border-stone-500 transition-colors">Save</button>
       </form>
+      {% if npc.locationId %}
+        {% for loc in campaignLocations %}
+          {% if loc.id === npc.locationId %}
+            <a href="/campaigns/{{ campaign.slug }}/locations/{{ loc.slug }}"
+               class="text-xs text-stone-400 hover:text-stone-200 transition-colors">→ {{ loc.name }}</a>
+          {% endif %}
+        {% endfor %}
+      {% endif %}
     </div>
+
+    <div class="flex items-center gap-3">
+      <span class="text-sm text-stone-500">Faction:</span>
+      <form method="POST" action="/campaigns/{{ campaign.slug }}/npcs/{{ npc.id }}/faction"
+            class="flex items-center gap-2">
+        {% include "partials/csrf.njk" %}
+        <select name="faction_id" class="bg-stone-900 border border-stone-700 rounded px-3 py-1.5 text-sm text-stone-300 focus:outline-none focus:border-stone-500">
+          <option value="">— None —</option>
+          {% for f in factionList %}
+            <option value="{{ f.id }}" {% if npc.factionId === f.id %}selected{% endif %}>{{ f.name }}</option>
+          {% endfor %}
+        </select>
+        <button type="submit" class="px-3 py-1.5 text-sm border border-stone-700 text-stone-400 rounded hover:border-stone-500 transition-colors">Save</button>
+      </form>
+      {% if npc.faction %}
+        <a href="/campaigns/{{ campaign.slug }}/factions/{{ npc.faction.id }}"
+           class="text-xs text-stone-400 hover:text-stone-200 transition-colors">→ {{ npc.faction.name }}</a>
+      {% endif %}
+    </div>
+
+    <form method="POST" action="/campaigns/{{ campaign.slug }}/npcs/{{ npc.id }}/reveal"
+          class="flex items-center gap-3">
+      {% include "partials/csrf.njk" %}
+      <input type="hidden" name="revealed" value="{{ 'false' if npc.revealed else 'true' }}"/>
+      <span class="text-sm {{ 'text-green-400' if npc.revealed else 'text-stone-500' }}">
+        {{ 'Visible to players' if npc.revealed else 'Hidden from players' }}
+      </span>
+      <button type="submit" class="px-3 py-1.5 text-sm border border-stone-700 text-stone-400 rounded hover:border-stone-500 transition-colors">
+        {{ 'Hide' if npc.revealed else 'Reveal' }}
+      </button>
+    </form>
 
     <form method="POST" action="/campaigns/{{ campaign.slug }}/npcs/{{ npc.id }}/archive"
           onsubmit="return confirm('Archive {{ npc.name }}? They will be hidden from all lists.')">
@@ -75,7 +114,35 @@
            class="text-xs text-stone-400 hover:text-stone-200 ml-1">{{ loc.name }}</a>
       {% endif %}
     {% endfor %}
+    {% if npc.faction %}
+      <span class="text-stone-700 mx-1">·</span>
+      <span class="text-xs text-stone-600">Faction:</span>
+      <a href="/campaigns/{{ campaign.slug }}/factions/{{ npc.faction.id }}"
+         class="text-xs text-stone-400 hover:text-stone-200 ml-1">{{ npc.faction.name }}</a>
+    {% endif %}
   </div>
+{% elif npc.faction %}
+  <div class="mb-6">
+    <span class="text-xs text-stone-600">Faction:</span>
+    <a href="/campaigns/{{ campaign.slug }}/factions/{{ npc.faction.id }}"
+       class="text-xs text-stone-400 hover:text-stone-200 ml-1">{{ npc.faction.name }}</a>
+  </div>
+{% endif %}
+
+{% if npc.artifacts.length > 0 %}
+<div class="mb-8">
+  <h2 class="text-xs font-semibold text-stone-500 uppercase tracking-widest mb-3">Carrying</h2>
+  <div class="flex flex-wrap gap-2">
+    {% for artifact in npc.artifacts %}
+      <a href="/campaigns/{{ campaign.slug }}/artifacts/{{ artifact.id }}"
+         class="text-sm text-stone-300 bg-stone-900 border border-stone-800 rounded px-3 py-1
+                hover:border-stone-700 transition-colors flex items-center gap-2">
+        {{ artifact.name }}
+        <span class="text-xs text-stone-600">{{ artifact.status }}</span>
+      </a>
+    {% endfor %}
+  </div>
+</div>
 {% endif %}
 
 <div id="journal-section">

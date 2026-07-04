@@ -48,6 +48,7 @@ export async function resetDb(): Promise<void> {
         journal_entries,
         artifacts,
         npcs,
+        factions,
         location_connections,
         locations,
         characters,

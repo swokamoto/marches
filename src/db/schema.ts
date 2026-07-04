@@ -52,6 +52,12 @@ export const npcStatusEnum = pgEnum("npc_status", [
   "unknown",
 ]);
 
+export const factionStatusEnum = pgEnum("faction_status", [
+  "active",
+  "disbanded",
+  "unknown",
+]);
+
 export const artifactStatusEnum = pgEnum("artifact_status", [
   "extant",
   "lost",
@@ -203,6 +209,7 @@ export const locations = pgTable("locations", {
   name: text("name").notNull(),
   slug: text("slug").notNull(),
   status: locationStatusEnum("status").notNull().default("open"),
+  revealed: boolean("revealed").notNull().default(false),
   parentLocationId: uuid("parent_location_id"), // self-ref, filled via relation
   createdBy: uuid("created_by")
     .notNull()
@@ -226,6 +233,21 @@ export const locationConnections = pgTable(
   (t) => [unique().on(t.fromLocationId, t.toLocationId)]
 );
 
+export const factions = pgTable("factions", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  campaignId: uuid("campaign_id")
+    .notNull()
+    .references(() => campaigns.id, { onDelete: "cascade" }),
+  name: text("name").notNull(),
+  description: text("description"),
+  status: factionStatusEnum("status").notNull().default("active"),
+  createdBy: uuid("created_by")
+    .notNull()
+    .references(() => users.id),
+  archivedAt: timestamp("archived_at"),
+  ...timestamps,
+});
+
 export const npcs = pgTable("npcs", {
   id: uuid("id").primaryKey().defaultRandom(),
   campaignId: uuid("campaign_id")
@@ -234,7 +256,11 @@ export const npcs = pgTable("npcs", {
   name: text("name").notNull(),
   description: text("description"),
   status: npcStatusEnum("status").notNull().default("alive"),
+  revealed: boolean("revealed").notNull().default(false),
   locationId: uuid("location_id").references(() => locations.id, {
+    onDelete: "set null",
+  }),
+  factionId: uuid("faction_id").references(() => factions.id, {
     onDelete: "set null",
   }),
   createdBy: uuid("created_by")
@@ -252,7 +278,11 @@ export const artifacts = pgTable("artifacts", {
   name: text("name").notNull(),
   description: text("description"),
   status: artifactStatusEnum("status").notNull().default("extant"),
+  revealed: boolean("revealed").notNull().default(false),
   locationId: uuid("location_id").references(() => locations.id, {
+    onDelete: "set null",
+  }),
+  npcId: uuid("npc_id").references(() => npcs.id, {
     onDelete: "set null",
   }),
   createdBy: uuid("created_by")
@@ -527,6 +557,7 @@ export const campaignsRelations = relations(campaigns, ({ one, many }) => ({
   members: many(campaignMembers),
   settings: many(campaignSettings),
   locations: many(locations),
+  factions: many(factions),
   npcs: many(npcs),
   artifacts: many(artifacts),
   expeditions: many(expeditions),
@@ -700,6 +731,8 @@ export const locationsRelations = relations(locations, ({ one, many }) => ({
   }),
   children: many(locations, { relationName: "location_parent" }),
   connectionsFrom: many(locationConnections, { relationName: "connection_from" }),
+  npcs: many(npcs),
+  artifacts: many(artifacts),
 }));
 
 export const locationConnectionsRelations = relations(locationConnections, ({ one }) => ({
@@ -714,7 +747,15 @@ export const locationConnectionsRelations = relations(locationConnections, ({ on
   }),
 }));
 
-export const npcsRelations = relations(npcs, ({ one }) => ({
+export const factionsRelations = relations(factions, ({ one, many }) => ({
+  campaign: one(campaigns, {
+    fields: [factions.campaignId],
+    references: [campaigns.id],
+  }),
+  npcs: many(npcs),
+}));
+
+export const npcsRelations = relations(npcs, ({ one, many }) => ({
   campaign: one(campaigns, {
     fields: [npcs.campaignId],
     references: [campaigns.id],
@@ -723,6 +764,11 @@ export const npcsRelations = relations(npcs, ({ one }) => ({
     fields: [npcs.locationId],
     references: [locations.id],
   }),
+  faction: one(factions, {
+    fields: [npcs.factionId],
+    references: [factions.id],
+  }),
+  artifacts: many(artifacts),
 }));
 
 export const artifactsRelations = relations(artifacts, ({ one }) => ({
@@ -733,6 +779,10 @@ export const artifactsRelations = relations(artifacts, ({ one }) => ({
   location: one(locations, {
     fields: [artifacts.locationId],
     references: [locations.id],
+  }),
+  npc: one(npcs, {
+    fields: [artifacts.npcId],
+    references: [npcs.id],
   }),
 }));
 
