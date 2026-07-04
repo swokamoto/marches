@@ -254,7 +254,7 @@
       </div>
       <div class="flex gap-3 items-start">
         <span class="text-stone-300 font-medium w-24 shrink-0">Active</span>
-        <span class="text-stone-500">The session is being played. GMs can open sessions and record world changes.</span>
+        <span class="text-stone-500">The expedition is underway. GMs can create sessions, record world changes, and manage participants.</span>
       </div>
       <div class="flex gap-3 items-start">
         <span class="text-stone-300 font-medium w-24 shrink-0">Completed</span>
@@ -274,14 +274,44 @@
   {{ section("sessions", "8. Sessions & notes") }}
     <p class="text-stone-400 mb-4 text-sm">
       A <strong class="text-stone-300">session</strong> is one play session within an expedition.
-      One expedition can have many sessions (multi-session dungeons, long overland journeys).
+      One expedition can have many sessions — a single dungeon might take three sittings, or a
+      long journey might be split into legs.
     </p>
-    <ul class="space-y-2 mb-4 text-sm text-stone-400">
+
+    <h3 class="text-base font-medium text-stone-200 mb-2">Creating &amp; scheduling</h3>
+    <ul class="space-y-2 mb-5 text-sm text-stone-400">
       <li class="flex items-start gap-2"><span class="text-stone-600 mt-0.5">•</span>
-        The GM opens a session from the expedition page. Each session has a <em>played at</em> date.
+        The GM creates a session from the expedition page. Sessions appear in a numbered list on that page.
       </li>
       <li class="flex items-start gap-2"><span class="text-stone-600 mt-0.5">•</span>
-        After a session, the GM closes it and can publish a report — a narrative summary visible to all players.
+        Each session has an optional <strong class="text-stone-300">campaign day</strong> (in-world date) and
+        a <strong class="text-stone-300">played at</strong> date (real-world date). Both can be edited later
+        from the session page.
+      </li>
+    </ul>
+
+    <h3 class="text-base font-medium text-stone-200 mb-2">Participants</h3>
+    <ul class="space-y-2 mb-5 text-sm text-stone-400">
+      <li class="flex items-start gap-2"><span class="text-stone-600 mt-0.5">•</span>
+        When a session is created, the expedition's current roster is copied in as the starting participants.
+      </li>
+      <li class="flex items-start gap-2"><span class="text-stone-600 mt-0.5">•</span>
+        GMs can add or remove participants at any time from the session page. The add dropdown includes
+        <em>any</em> character in the campaign — not just those already on the expedition roster.
+      </li>
+      <li class="flex items-start gap-2"><span class="text-stone-600 mt-0.5">•</span>
+        Players can also <strong class="text-stone-300">self-join</strong> any open session directly — useful
+        when a character joins mid-expedition after the recruiting window has closed. A
+        <em>Join this session</em> button appears on the session page for players with an active character
+        not yet in that session. Joining a session also adds the character to the expedition roster.
+      </li>
+    </ul>
+
+    <h3 class="text-base font-medium text-stone-200 mb-2">After the session</h3>
+    <ul class="space-y-2 mb-5 text-sm text-stone-400">
+      <li class="flex items-start gap-2"><span class="text-stone-600 mt-0.5">•</span>
+        The GM closes the session and can publish a <strong class="text-stone-300">report</strong> — a
+        narrative summary visible to all players.
       </li>
       <li class="flex items-start gap-2"><span class="text-stone-600 mt-0.5">•</span>
         Each participating player can submit a <strong class="text-stone-300">player note</strong> from the
@@ -292,6 +322,13 @@
         entries as <em>private</em> for personal reference only.
       </li>
     </ul>
+
+    <h3 class="text-base font-medium text-stone-200 mb-2">Finding your sessions</h3>
+    <p class="text-stone-400 text-sm">
+      Players see a <strong class="text-stone-300">Your Sessions</strong> panel on the campaign homepage
+      listing every session their characters are part of, sorted by expedition status. Click any row to
+      go straight to that session.
+    </p>
   </section>
 
   {# ─────────────────────────────────────────── #}
@@ -302,7 +339,8 @@
     </p>
     <ul class="space-y-2 mb-4 text-sm text-stone-400">
       <li class="flex items-start gap-2"><span class="text-stone-600 mt-0.5">•</span>
-        Only <strong class="text-stone-300">active</strong> characters can join expeditions.
+        Only <strong class="text-stone-300">active</strong> characters can join expeditions during recruiting,
+        or self-join open sessions.
       </li>
       <li class="flex items-start gap-2"><span class="text-stone-600 mt-0.5">•</span>
         Archive a character when they retire, die, or leave the campaign.
