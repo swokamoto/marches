@@ -32,7 +32,7 @@
             <div class="text-sm text-stone-500 mt-1">
               GM: {{ session.gm.displayName }}
               {% if session.campaignDay %} · Day {{ session.campaignDay }}{% endif %}
-              · {{ session.playedAt | date("mmm d, yyyy") }}
+              · {{ session.playedAt | dateformat }}
             </div>
           </div>
           <span class="text-stone-600 text-xs shrink-0">{{ session.createdAt | timeago }}</span>

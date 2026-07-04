@@ -85,6 +85,7 @@
       {# GMs see all submitted notes #}
       {% if session.playerNotes.length === 0 %}
         <p class="text-stone-600 text-sm">No notes submitted yet.</p>
+        <p class="text-stone-500 text-xs mt-1">Participants can submit their note by visiting this page.</p>
       {% else %}
         <div class="space-y-4">
           {% for note in session.playerNotes %}

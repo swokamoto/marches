@@ -143,14 +143,16 @@ router.post(
 
     const updated = await updateExpeditionStatus(expedition.id, next as Parameters<typeof updateExpeditionStatus>[1]);
 
-    void logActivity({
-      campaignId: res.locals.campaign.id,
-      actorId: req.session.userId!,
-      actionType: "expedition.status_changed",
-      entityType: "expedition",
-      entityId: expedition.id,
-      metadata: { title: expedition.title, status: next },
-    });
+    if (next === "completed") {
+      void logActivity({
+        campaignId: res.locals.campaign.id,
+        actorId: req.session.userId!,
+        actionType: "expedition.status_changed",
+        entityType: "expedition",
+        entityId: expedition.id,
+        metadata: { title: expedition.title, status: next },
+      });
+    }
 
     if (req.headers["hx-request"]) {
       return res.render("partials/expedition-status-zone.njk", {
@@ -174,6 +176,14 @@ router.post(
     }
 
     await updateExpeditionStatus(expedition.id, "cancelled");
+    void logActivity({
+      campaignId: res.locals.campaign.id,
+      actorId: req.session.userId!,
+      actionType: "expedition.status_changed",
+      entityType: "expedition",
+      entityId: expedition.id,
+      metadata: { title: expedition.title, status: "cancelled" },
+    });
     res.redirect(`/campaigns/${res.locals.campaign.slug}/expeditions`);
   }
 );

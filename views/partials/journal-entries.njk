@@ -34,6 +34,8 @@
             <span class="text-xs text-stone-500">{{ e.author.displayName }}</span>
             {% if e.visibility === 'gm_only' %}
               <span class="text-xs text-amber-700">gm only</span>
+            {% elif e.visibility === 'private' %}
+              <span class="text-xs text-stone-600 italic">private</span>
             {% endif %}
             {% if member.role in ['gm', 'admin'] %}
               {% if e.pinned %}
