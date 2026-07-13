@@ -153,6 +153,11 @@ Built by [Scott Okamoto](https://scott-portfolio-azure.vercel.app/) — [GitHub]
 
 ---
 
+Motivation
+Quick Start
+Usage
+Contributing
+
 ## License
 
 MIT
